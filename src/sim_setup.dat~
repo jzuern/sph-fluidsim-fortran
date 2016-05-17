@@ -1,0 +1,9 @@
+5000       - Number of frames
+50         - Number of steps per frame. Default: 100
+0.01       - Size of particles (radius). Also: Distance of particles in initial configuration
+0.0001     - Time step size Default: 1E-4
+10000       - Reference density Default: 1E3
+1000       - Bulk modulus (Kompressionsmodul) Default: 1E3
+0.1        - Viscosity Default: 0.1
+9.81       - gravity strength Default: 9.81
+0.03      - Cutoff radius (in multiples of total size of simulation grid for linked lists neighbor tracking

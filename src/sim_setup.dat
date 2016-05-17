@@ -1,4 +1,4 @@
-5000       - Number of frames
+10       - Number of frames
 50         - Number of steps per frame. Default: 100
 0.01       - Size of particles (radius). Also: Distance of particles in initial configuration
 0.0001     - Time step size Default: 1E-4

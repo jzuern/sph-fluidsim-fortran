@@ -9,10 +9,41 @@ module sphfunctions
 
 implicit none
 
+
+private
+
+public :: reflect_bc, compute_density_with_ll, compute_accel,check_state
+
 contains
-  subroutine reflect_bc(s)
+
+
+
+
+    subroutine check_state(sstate)
+      use util
+      type(systemstate) :: sstate !system state object
+
+      integer :: i
+      double precision :: xi, yi
+
+      do i = 1,sstate%nParticles
+        xi = sstate%x(2*i + 0)
+        yi = sstate%x(2*i + 1)
+        ! assert statements unavailable in F90
+        !         assert( xi >= 0 || xi <= 1 );
+        !         assert( yi >= 0 || yi <= 1 );
+      end do
+
+
+
+    end subroutine
+
+
+
+
+  subroutine reflect_bc(sstate)
     use util
-    type (systemstate) :: s
+    type (systemstate) :: sstate
 
 
   end subroutine
@@ -24,7 +55,13 @@ contains
     type (systemstate)           :: s
     double precision, intent(in) :: params
     integer, dimension(:)        :: ll
-    integer, dimension(:)        :: lc
+    integer, dimension(:,:)        :: lc
+
+
+
+
+
+
 
   end subroutine
 
@@ -34,7 +71,13 @@ contains
     type (systemstate)           :: s
     double precision, intent(in) :: params
     integer, dimension(:)        :: ll
-    integer, dimension(:)        :: lc
+    integer, dimension(:,:)        :: lc
+
+
+
+
+
+
   end subroutine
 
 
