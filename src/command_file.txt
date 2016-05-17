@@ -1,0 +1,6 @@
+set terminal x11 persist title  "Gnuplot"
+unset key
+set grid
+plot "data_file.txt" using 1:2 with lines linecolor rgb "blue" linewidth 1
+pause 0
+q
