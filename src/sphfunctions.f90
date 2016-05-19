@@ -3,8 +3,7 @@ module sphfunctions
   ! Implementation of functions and subroutines for the SPH method
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/16/2016
-
+  !Last modified: 05/19/2016
 
 
 implicit none
@@ -15,6 +14,10 @@ private
 public :: reflect_bc, compute_density_with_ll, compute_accel,check_state
 
 contains
+
+
+
+
 
 
 
@@ -46,6 +49,11 @@ contains
     type (systemstate) :: sstate
 
 
+
+
+
+
+
   end subroutine
 
 
@@ -71,7 +79,7 @@ contains
     type (systemstate)           :: s
     double precision, intent(in) :: params
     integer, dimension(:)        :: ll
-    integer, dimension(:,:)        :: lc
+    integer, dimension(:,:)      :: lc
 
 
 

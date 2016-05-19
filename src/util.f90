@@ -3,7 +3,7 @@ module util
   ! Auxiliary utility types and subroutines and functions
 
   !Created by Jannik Zuern on 05/16/2016
-	!Last modified: 05/16/2016
+	!Last modified: 05/19/2016
 
 
 implicit none
@@ -33,7 +33,6 @@ public :: systemstate, initialize_state, parse_input
 
 
 contains
-
 
 
   subroutine initialize_state(state)
@@ -75,6 +74,13 @@ contains
 
     close(unit=100)
 
+    print *, "Parsing completed"
+
+
+  end subroutine
+
+
+  subroutine plot_points()
 
   end subroutine
 

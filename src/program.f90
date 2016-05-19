@@ -36,7 +36,8 @@ program sph
 !-------------------------------------------------------------
 
 ! Define variables
-integer, parameter											:: nFrames ! number of frames to calculate
+integer																:: nFrames ! number of frames to calculate
+integer :: i,j,k  ! loop iteration variables
 integer, allocatable, dimension(:)  	  :: ll ! linked list array
 integer, allocatable, dimension(:,:)  	:: lc ! linked cell array
 double precision, dimension (9)    	   	:: simulation_parameter ! Initialize sim param vector
@@ -60,6 +61,11 @@ call initialize_state(sstate)
 
 ! Simulation loop
 nFrames = simulation_parameter(1)
+
+
+do i = 1,nFrames
+	
+end do
 
 
 
