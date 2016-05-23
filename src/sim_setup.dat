@@ -1,7 +1,7 @@
-10       - Number of frames
-50         - Number of steps per frame. Default: 100
+100       - Number of frames
+100         - Number of steps per frame. Default: 100
 0.01       - Size of particles (radius). Also: Distance of particles in initial configuration
-0.0001     - Time step size Default: 1E-4
+0.001     - Time step size Default: 1E-4
 1000        - Reference density Default: 1000
 1000       - Bulk modulus (Kompressionsmodul) Default: 1E3
 0.1        - Viscosity Default: 0.1

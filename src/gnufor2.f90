@@ -1683,10 +1683,13 @@
 		write (my_range,'(e15.7)') maxval(abs(y1))
 		write ( file_unit, '(a)' ) 'set xrange [-'//trim(my_range)//':'//trim(my_range)//']'
 		write ( file_unit, '(a)' ) 'set yrange [-'//trim(my_range)//':'//trim(my_range)//']'
+
 		write ( file_unit, '(a)' ) 'set size square'
 		write ( file_unit, '(a)' ) 'set polar'
 		write ( file_unit, '(a)' ) 'set grid polar'
 	else
+		write ( file_unit, '(a)' ) 'set xrange [0:1]'
+		write ( file_unit, '(a)' ) 'set yrange [0:1]'
 		write ( file_unit, '(a)' ) 'set grid'
 	end if
 !***********************************************************************************

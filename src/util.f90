@@ -10,7 +10,7 @@ implicit none
 
 
 private
-public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator,free_state,Pi
+public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator , free_state , plot_points , Pi
 
   double precision, PARAMETER :: Pi = 3.1415927d0
 
@@ -136,19 +136,45 @@ contains
 
 
 
+  subroutine plot_points(sstate)
+    use gnufor2
+
+    type(systemstate) :: sstate
+    integer :: n
+    double precision, allocatable, dimension(:) :: x,y
+
+    n = sstate%nParticles
+
+
+    x = sstate%x(1:n:2)
+    y = sstate%x(2:n:2)
+
+    print *, sstate%x(1:n:2)
+    print *, sstate%x(2:n:2)
 
 
 
-  subroutine plot_points()
+    ! 	integer, parameter	:: N1=50
+    ! 	real(kind=8)		:: x1(N1), f1(N1)
+    ! 	integer :: i
+    ! ! generate data for 2D plots
+    ! 	do  i=1,N1
+    ! 		x1(i)=5.0*i/N1
+    ! 	end do
+    ! 	f1=sin(2*x1)
+
+
+
+
+    	! call plot(x1,f1,'' 5.'') ! plotting with points
+      call plot(x,y," 5.", pause=0.5)
+
+    	print *,'press ENTER to go to the next frame'
+    	read  *
+
+
 
   end subroutine
-
-
-
-
-
-
-
 
 
 

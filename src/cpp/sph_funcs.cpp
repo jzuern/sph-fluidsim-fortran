@@ -158,138 +158,138 @@ void plotPoints(int frame,std::ofstream& out, int n, sim_state_t* s,sim_param_t 
 //         }
 // }
 
-
-void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
-
-        // Unpack basic parameters
-        const float h= params->h;
-        const float rho0 = params->rho0;
-        const float k= params->k;
-        const float mu= params->mu;
-        const float g= params->g;
-        const float mass = state->mass;
-        const float h2= h*h;
-
-        // Unpack system state
-        const float*   rho = state->rho;
-        const float*   x = state->x;
-        const float*   v = state->v;
-        float*         a = state->a;
-        int n = state->n;
-
-
-        int nmax[2];
-
-                float rcut = params->rcut; // rcut equal in each dimension
-                for(int i=0; i<2; i++) { // go through each dimension
-                        nmax[i]=int(floor(1/rcut));
-                }
-
-                // clearing ll and lc:
-                for(int i=0; i<nmax[0]; i++) {
-                        for(int j=0; j<nmax[1]; j++) {
-                                lc[i][j]=-1; // initialize with value -1 (empty)
-                        }
-                }
-                for(int i=0; i<n; i++) { // initialize with value -1 (empty)
-                        ll[i]=-1;
-                }
-
-
-        // Start with gravity and surface forces
-        for (int i = 0; i < n; ++i) {
-                a[2*i+0] = 0;
-                a[2*i+1] = -g;
-        }
-
-        // Constants for interaction term
-        float C0 = mass / M_PI / ( (h2)*(h2) );
-        float Cp = 15*k;
-        float Cv = -40*mu;
-
-        int nCalcs = 0;
-
-
-                // setting up updated neighbor list
-                setup_neighbour_list(params,state,ll,lc); // update linked lists for new particle positions
-
-                compute_density_with_ll(state,params,ll,lc);
-
-                int ndx[]={1,1,0,-1};
-                int ndy[]={0,1,1,1};
-                int n1,n2,nx,ny;
-
-                for(int i=0; i<nmax[0]; i++) {
-                        // std::cout << "i = " << i << "\n";
-                        for(int j=0; j<nmax[1]; j++) {
-                                // std::cout << "j = " << j << "\n";
-                                if(lc[i][j]!=-1) {
-                                        n1=lc[i][j];
-                                        while(n1 != -1) {
-                                                n2=ll[n1];
-                                                const float rhoi = rho[n1];
-                                                while(n2!=-1) {
-                                                        nCalcs += 1;
-                                                        float dx = x[2*n2+0]-x[2*n1+0];
-                                                        float dy = x[2*n2+1]-x[2*n1+1];
-                                                        float r2 = dx*dx + dy*dy;
-                                                        if (r2 < h2) {
-                                                                const float rhoj = rho[n2];
-                                                                float q = sqrt(r2)/h;
-                                                                float u = 1-q;
-                                                                float w0 = C0 * u/rhoi/rhoj;
-                                                                float wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q;
-                                                                float wv = w0 * Cv;
-                                                                float dvx = v[2*n2+0]-v[2*n1+0];
-                                                                float dvy = v[2*n2+1]-v[2*n1+1];
-                                                                a[2*n1+0] -= (wp*dx + wv*dvx);
-                                                                a[2*n1+1] -= (wp*dy + wv*dvy);
-                                                                a[2*n2+0] += (wp*dx + wv*dvx);// muss drin bleiben
-                                                                a[2*n2+1] += (wp*dy + wv*dvy);// muss drin bleiben
-                                                        }
-                                                        n2=ll[n2];
-                                                }
-                                                // Neighbor cells
-                                                for(int no=0; no<4; no++) {
-                                                        nx=i+ndx[no];
-                                                        ny=j+ndy[no];
-
-                                                        // boundaries:
-                                                        if(nx<0)           continue; // to end of loop...
-                                                        if(nx>nmax[0]-1)   continue;
-                                                        if(ny<0)           continue;
-                                                        if(ny>nmax[1]-1)   continue;
-                                                        n2=lc[nx][ny];
-
-                                                        while(n2!=-1) {
-                                                                nCalcs += 1;
-                                                                float dx = x[2*n2+0]-x[2*n1+0];
-                                                                float dy = x[2*n2+1]-x[2*n1+1];
-                                                                float r2 = dx*dx + dy*dy;
-                                                                if (r2 < h2) {
-                                                                        const float rhoj = rho[n2];
-                                                                        float q = sqrt(r2)/h;
-                                                                        float u = 1-q;
-                                                                        float w0 = C0 * u/rhoi/rhoj;
-                                                                        float wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q;
-                                                                        float wv = w0 * Cv;
-                                                                        float dvx = v[2*n2+0]-v[2*n1+0];
-                                                                        float dvy = v[2*n2+1]-v[2*n1+1];
-                                                                        a[2*n1+0] -= (wp*dx + wv*dvx);
-                                                                        a[2*n1+1] -= (wp*dy + wv*dvy);
-                                                                        a[2*n2+0] += (wp*dx + wv*dvx);
-                                                                        a[2*n2+1] += (wp*dy + wv*dvy);
-                                                                }
-                                                                n2=ll[n2];
-                                                        }
-                                                }
-                                                n1=ll[n1];
-                                        }
-                                }
-                        }
-                }
-        }
-}
+//
+// void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
+//
+//         // Unpack basic parameters
+//         const float h= params->h;
+//         const float rho0 = params->rho0;
+//         const float k= params->k;
+//         const float mu= params->mu;
+//         const float g= params->g;
+//         const float mass = state->mass;
+//         const float h2= h*h;
+//
+//         // Unpack system state
+//         const float*   rho = state->rho;
+//         const float*   x = state->x;
+//         const float*   v = state->v;
+//         float*         a = state->a;
+//         int n = state->n;
+//
+//
+//         int nmax[2];
+//
+//                 float rcut = params->rcut; // rcut equal in each dimension
+//                 for(int i=0; i<2; i++) { // go through each dimension
+//                         nmax[i]=int(floor(1/rcut));
+//                 }
+//
+//                 // clearing ll and lc:
+//                 for(int i=0; i<nmax[0]; i++) {
+//                         for(int j=0; j<nmax[1]; j++) {
+//                                 lc[i][j]=-1; // initialize with value -1 (empty)
+//                         }
+//                 }
+//                 for(int i=0; i<n; i++) { // initialize with value -1 (empty)
+//                         ll[i]=-1;
+//                 }
+//
+//
+//         // Start with gravity and surface forces
+//         for (int i = 0; i < n; ++i) {
+//                 a[2*i+0] = 0;
+//                 a[2*i+1] = -g;
+//         }
+//
+//         // Constants for interaction term
+//         float C0 = mass / M_PI / ( (h2)*(h2) );
+//         float Cp = 15*k;
+//         float Cv = -40*mu;
+//
+//         int nCalcs = 0;
+//
+//
+//                 // setting up updated neighbor list
+//                 setup_neighbour_list(params,state,ll,lc); // update linked lists for new particle positions
+//
+//                 compute_density_with_ll(state,params,ll,lc);
+//
+//                 int ndx[]={1,1,0,-1};
+//                 int ndy[]={0,1,1,1};
+//                 int n1,n2,nx,ny;
+//
+//                 for(int i=0; i<nmax[0]; i++) {
+//                         // std::cout << "i = " << i << "\n";
+//                         for(int j=0; j<nmax[1]; j++) {
+//                                 // std::cout << "j = " << j << "\n";
+//                                 if(lc[i][j]!=-1) {
+//                                         n1=lc[i][j];
+//                                         while(n1 != -1) {
+//                                                 n2=ll[n1];
+//                                                 const float rhoi = rho[n1];
+//                                                 while(n2!=-1) {
+//                                                         nCalcs += 1;
+//                                                         float dx = x[2*n2+0]-x[2*n1+0];
+//                                                         float dy = x[2*n2+1]-x[2*n1+1];
+//                                                         float r2 = dx*dx + dy*dy;
+//                                                         if (r2 < h2) {
+//                                                                 const float rhoj = rho[n2];
+//                                                                 float q = sqrt(r2)/h;
+//                                                                 float u = 1-q;
+//                                                                 float w0 = C0 * u/rhoi/rhoj;
+//                                                                 float wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q;
+//                                                                 float wv = w0 * Cv;
+//                                                                 float dvx = v[2*n2+0]-v[2*n1+0];
+//                                                                 float dvy = v[2*n2+1]-v[2*n1+1];
+//                                                                 a[2*n1+0] -= (wp*dx + wv*dvx);
+//                                                                 a[2*n1+1] -= (wp*dy + wv*dvy);
+//                                                                 a[2*n2+0] += (wp*dx + wv*dvx);// muss drin bleiben
+//                                                                 a[2*n2+1] += (wp*dy + wv*dvy);// muss drin bleiben
+//                                                         }
+//                                                         n2=ll[n2];
+//                                                 }
+//                                                 // Neighbor cells
+//                                                 for(int no=0; no<4; no++) {
+//                                                         nx=i+ndx[no];
+//                                                         ny=j+ndy[no];
+//
+//                                                         // boundaries:
+//                                                         if(nx<0)           continue; // to end of loop...
+//                                                         if(nx>nmax[0]-1)   continue;
+//                                                         if(ny<0)           continue;
+//                                                         if(ny>nmax[1]-1)   continue;
+//                                                         n2=lc[nx][ny];
+//
+//                                                         while(n2!=-1) {
+//                                                                 nCalcs += 1;
+//                                                                 float dx = x[2*n2+0]-x[2*n1+0];
+//                                                                 float dy = x[2*n2+1]-x[2*n1+1];
+//                                                                 float r2 = dx*dx + dy*dy;
+//                                                                 if (r2 < h2) {
+//                                                                         const float rhoj = rho[n2];
+//                                                                         float q = sqrt(r2)/h;
+//                                                                         float u = 1-q;
+//                                                                         float w0 = C0 * u/rhoi/rhoj;
+//                                                                         float wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q;
+//                                                                         float wv = w0 * Cv;
+//                                                                         float dvx = v[2*n2+0]-v[2*n1+0];
+//                                                                         float dvy = v[2*n2+1]-v[2*n1+1];
+//                                                                         a[2*n1+0] -= (wp*dx + wv*dvx);
+//                                                                         a[2*n1+1] -= (wp*dy + wv*dvy);
+//                                                                         a[2*n2+0] += (wp*dx + wv*dvx);
+//                                                                         a[2*n2+1] += (wp*dy + wv*dvy);
+//                                                                 }
+//                                                                 n2=ll[n2];
+//                                                         }
+//                                                 }
+//                                                 n1=ll[n1];
+//                                         }
+//                                 }
+//                         }
+//                 }
+//         }
+// }
 
 
 // void free_state(sim_state_t* s){

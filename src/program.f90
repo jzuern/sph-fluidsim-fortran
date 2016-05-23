@@ -13,21 +13,7 @@ program sph
 
 	implicit none
 
-! 	integer, parameter	:: N1=50
-! 	real(kind=8)		:: x1(N1), f1(N1)
-! 	integer :: i
-! ! generate data for 2D plots
-! 	do  i=1,N1
-! 		x1(i)=5.0*i/N1
-! 	end do
-! 	f1=sin(2*x1)
-!
-!
-! 	print *,'Example 1: simple 2D graph'
-! 	print *,'call plot(x1,f1)'
-! 	call plot(x1,f1)
-! 	print *,'press ENTER to go to the next example'
-! 	read  *
+
 
 
 
@@ -87,11 +73,11 @@ do i = 1,nFrames
 		call compute_accel(sstate, simulation_parameter,ll,lc) !update values for accellerations
 		call leapfrog_step(sstate, dt) 												!update velocities and positions based on previously calculated accelleration
 		call check_state(sstate);  														!not working
-		call print_neighour_list(sstate,simulation_parameter,ll,lc)
 	end do
 
+	call print_neighour_list(sstate,simulation_parameter,ll,lc)
+	call plot_points(sstate)
 
-	!call plotPoints(i,out, n, sstate,simulation_parameter);
 	!usleep(1000)   ! TODO: implement fortran sleep
 end do
 
