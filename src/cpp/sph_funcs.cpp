@@ -128,9 +128,7 @@ void compute_density_with_ll(sim_state_t* s, sim_param_t* params, int* ll, int *
                 nmax[i]=int(floor(1/rcut));
         }
 
-        // for (int i = 0; i < n; i++) { rho[i] += 4*mass/M_PI/h2;}
-        // int ndx[]={1,1,1,0,0,-1,-1,-1}; //
-        // int ndy[]={-1,0,1,-1,1,-1,0,1}; //
+
         int ndx[]={1,1,0,-1};
         int ndy[]={0,1,1,1};
         int nx,ny;

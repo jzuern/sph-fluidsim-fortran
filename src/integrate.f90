@@ -4,15 +4,16 @@ module integrate
   ! current method: leapfrog method
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/16/2016
+  !Last modified: 05/23/2016
 
   implicit none
 
 contains
   subroutine leapfrog_step(state, dt)
     use util
-    type (systemstate) state
-    double precision :: dt
+    ! use sphfunctions  ! in order to call
+    type (systemstate) :: state
+    double precision   :: dt
 
     state%vh = state%v + (state%a  * dt/2)
     state%v  = state%v + (state%a  * dt)
@@ -35,8 +36,13 @@ contains
 
   subroutine leapfrog_start(state, dt)
     use util
-    type (systemstate) state
-    double precision :: dt
+    ! use sphfunctions
+    type(systemstate) :: state
+    double precision  :: dt
+
+    state%vh = state%vh + (state%a  * dt)
+    state%v  = state%vh + (state%a  * dt/2)
+    state%x  = state%x  + (state%vh * dt)
 
     ! const float*  a = s->a;
     ! float*  vh = s->vh;

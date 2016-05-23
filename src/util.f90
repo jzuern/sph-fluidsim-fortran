@@ -10,7 +10,9 @@ implicit none
 
 
 private
-public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator,free_state
+public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator,free_state,Pi
+
+  double precision, PARAMETER :: Pi = 3.1415927d0
 
   type systemstate
 
@@ -82,7 +84,7 @@ contains
     allocate(state%vh  (2*state%nParticles))
     allocate(state%a   (2*state%nParticles))
     allocate(state%rho (  state%nParticles))
-    
+
     state%x = 0
     state%v = 0
     state%vh = 0
