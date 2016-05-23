@@ -14,7 +14,7 @@ module linkedlists
 
 
 
-  implicit none
+implicit none
 
 private
 public :: setup_neighbour_list , print_neighour_list , init_lc , init_ll
@@ -43,11 +43,11 @@ contains
     nmax(2) = int(floor(1/rcut)) ! maximum number of cells in each dimension
 
     do i = 1,ntot
-      nidx(1) = int((floor((sstate%x(2*i+0))/rcut))); !x coordinate
+      nidx(1) = int((floor((sstate%x(2*i-1))/rcut))); !x coordinate
       nidx(1) = min(nidx(1),nmax(1)-1)
       nidx(1) = max(nidx(1),0)
 
-      nidx(2) = int((floor((sstate%x(2*i+1))/rcut))); !y coordinate
+      nidx(2) = int((floor((sstate%x(2*i-0))/rcut))); !y coordinate
       nidx(2) = min(nidx(2),nmax(2)-1)
       nidx(2) = max(nidx(2),0)
 
@@ -63,8 +63,8 @@ contains
     ! print neighbor list for debugging purposes
 
     use util
-    type(systemstate) :: sstate
-    double precision   :: params
+    type(systemstate)              :: sstate
+    double precision,dimension(9)  :: params
     integer, dimension(:)          :: ll
     integer, dimension(:,:)        :: lc
 
@@ -89,7 +89,7 @@ contains
           n = lc(i,j)
 
           do while ( n /= -1)
-            print *, n , ",coordinates: " , sstate%x(2*n+0) , " " , sstate%x(2*n+1)
+            print *, n , ",coordinates: " , sstate%x(2*n-1) , " " , sstate%x(2*n-0)
             n = ll(n)
           end do
           print *, ! new line

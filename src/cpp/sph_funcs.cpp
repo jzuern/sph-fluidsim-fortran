@@ -76,39 +76,39 @@ void plotPoints(int frame,std::ofstream& out, int n, sim_state_t* s,sim_param_t 
 }
 
 
-void compute_density_without_ll(sim_state_t* s, sim_param_t* params){
-        int n = s->n;
-        float*   rho = s->rho;
-        float*   x = s->x;
-        float mass = s->mass;
-        float h = params->h;
-        float h2 = h*h;
-        float h8 = (h2*h2)*(h2*h2);
-        float C = 4*s->mass / M_PI / h8;
-        memset(rho, 0, n*sizeof(float)); // sets values of rho to (double)0
-
-        for (int i = 0; i < n; i++) {
-                //std::cout << "i = " << i << "\n";
-                rho[i] += 4*mass/M_PI/h2;
-                for (int j = i+1; j < n; j++) {
-
-                        float dx = x[2*i + 0] - x[2*j + 0];
-                        float dy = x[2*i + 1] - x[2*j + 1];
-                        float r2 = dx*dx + dy*dy;
-                        float z = h2 - r2;
-                        if (z > 0) {
-                                float rho_ij = C*z*z*z;
-                                // std::cout << "x[2*i+0] = " << x[2*i+0] << " x[2*i+1] = " << x[2*i+1] << "x[2*j+0] = " << x[2*j+0] << "x[2*j+1] = " << x[2*j+1] << std::endl;
-
-                                rho[i] += rho_ij;
-                                rho[j] += rho_ij;
-                        }
-                        // std::cout << "rho[i] = " << rho[i] << ", rho[j] = " << rho[j] << std::endl;
-                }
-        }
-        // for(int i=0; i<n ; i++) {  std::cout << "rho[i] = " << rho[i] << std::endl;}
-
-}
+// void compute_density_without_ll(sim_state_t* s, sim_param_t* params){
+//         int n = s->n;
+//         float*   rho = s->rho;
+//         float*   x = s->x;
+//         float mass = s->mass;
+//         float h = params->h;
+//         float h2 = h*h;
+//         float h8 = (h2*h2)*(h2*h2);
+//         float C = 4*s->mass / M_PI / h8;
+//         memset(rho, 0, n*sizeof(float)); // sets values of rho to (double)0
+//
+//         for (int i = 0; i < n; i++) {
+//                 //std::cout << "i = " << i << "\n";
+//                 rho[i] += 4*mass/M_PI/h2;
+//                 for (int j = i+1; j < n; j++) {
+//
+//                         float dx = x[2*i + 0] - x[2*j + 0];
+//                         float dy = x[2*i + 1] - x[2*j + 1];
+//                         float r2 = dx*dx + dy*dy;
+//                         float z = h2 - r2;
+//                         if (z > 0) {
+//                                 float rho_ij = C*z*z*z;
+//                                 // std::cout << "x[2*i+0] = " << x[2*i+0] << " x[2*i+1] = " << x[2*i+1] << "x[2*j+0] = " << x[2*j+0] << "x[2*j+1] = " << x[2*j+1] << std::endl;
+//
+//                                 rho[i] += rho_ij;
+//                                 rho[j] += rho_ij;
+//                         }
+//                         // std::cout << "rho[i] = " << rho[i] << ", rho[j] = " << rho[j] << std::endl;
+//                 }
+//         }
+//         // for(int i=0; i<n ; i++) {  std::cout << "rho[i] = " << rho[i] << std::endl;}
+//
+// }
 
 void compute_density_with_ll(sim_state_t* s, sim_param_t* params, int* ll, int **lc){
         int n = s->n;
@@ -358,112 +358,112 @@ void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
 }
 
 
-void free_state(sim_state_t* s){
-        delete[] s->x;
-        delete[] s->rho;
-        delete[] s->a;
-        delete[] s->v;
-        delete[] s->vh;
-        delete s;
-}
+// void free_state(sim_state_t* s){
+//         delete[] s->x;
+//         delete[] s->rho;
+//         delete[] s->a;
+//         delete[] s->v;
+//         delete[] s->vh;
+//         delete s;
+// }
 
-int box_indicator(float x, float y){
-        return (x > 0.3) && (y > 0.3) && (x < 0.7) && (y < 0.7);
-}
-
-int circ_indicator(float x, float y){
-        float dx = (x-0.5);
-        float dy = (y-0.6);
-        float r2 = dx*dx + dy*dy;
-        return (r2 > 0.1*0.1 && r2 < 0.3*0.3);
-}
-
-
-void normalize_mass(sim_state_t* s, sim_param_t* param){
-        s->mass = 1;
-        compute_density_without_ll(s, param);
-
-        float rho0 = param->rho0;
-        float rho2s = 0;
-        float rhos = 0;
-        for (int i = 0; i < s->n; ++i) {
-                rho2s += (s->rho[i])*(s->rho[i]);
-                rhos += s->rho[i];
-        }
-        s->mass *= ( rho0*rhos / rho2s );
-}
+// int box_indicator(float x, float y){
+//         return (x > 0.3) && (y > 0.3) && (x < 0.7) && (y < 0.7);
+// }
+//
+// int circ_indicator(float x, float y){
+//         float dx = (x-0.5);
+//         float dy = (y-0.6);
+//         float r2 = dx*dx + dy*dy;
+//         return (r2 > 0.1*0.1 && r2 < 0.3*0.3);
+// }
 
 
-sim_state_t* init_particles(sim_param_t* param){
-        sim_state_t* s = place_particles(param);
-        normalize_mass(s, param);
-        return s;
-}
+// void normalize_mass(sim_state_t* s, sim_param_t* param){
+//         s->mass = 1;
+//         compute_density_without_ll(s, param);
+//
+//         float rho0 = param->rho0;
+//         float rho2s = 0;
+//         float rhos = 0;
+//         for (int i = 0; i < s->n; ++i) {
+//                 rho2s += (s->rho[i])*(s->rho[i]);
+//                 rhos += s->rho[i];
+//         }
+//         s->mass *= ( rho0*rhos / rho2s );
+// }
 
-sim_state_t* place_particles(sim_param_t* param){
-        float h = param->h;
-        float hh = h/1.0;// Initialize points closer than radius to each other so that
-                         //realistic behaviour is obtained
 
-        // Count mesh points that fall in indicated region.
-        int count = 0;
-        for (float x = 0; x < 1; x += hh) {
-                for (float y = 0; y < 1; y += hh) {
-                        count += circ_indicator(x,y);
-                }
-        }
+// sim_state_t* init_particles(sim_param_t* param){
+//         sim_state_t* s = place_particles(param);
+//         normalize_mass(s, param);
+//         return s;
+// }
 
-        // Populate the particle data structure
-        sim_state_t* s = alloc_state(count);
+// sim_state_t* place_particles(sim_param_t* param){
+//         float h = param->h;
+//         float hh = h/1.0;// Initialize points closer than radius to each other so that
+//                          //realistic behaviour is obtained
+//
+//         // Count mesh points that fall in indicated region.
+//         int count = 0;
+//         for (float x = 0; x < 1; x += hh) {
+//                 for (float y = 0; y < 1; y += hh) {
+//                         count += circ_indicator(x,y);
+//                 }
+//         }
+//
+//         // Populate the particle data structure
+//         sim_state_t* s = alloc_state(count);
+//
+//         // debug segmentation fault
+//         std::cout << " Number of particles in Simulation: " << s->n << std::endl;
+//
+//         float rd;
+//         int p = 0;
+//         for (float x = 0; x < 1; x += hh) {
+//                 for (float y = 0; y < 1; y += hh) {
+//                         if (circ_indicator(x,y)) {
+//                                 rd = float(std::rand())/100000000000;
+//                                 s->x[2*p+0] = x;
+//                                 s->x[2*p+1] = y;
+//                                 s->v[2*p+0] = rd;
+//                                 s->v[2*p+1] = rd;
+//                                 ++p;
+//                         }
+//                 }
+//         }
+//         return s;
+// }
 
-        // debug segmentation fault
-        std::cout << " Number of particles in Simulation: " << s->n << std::endl;
+// sim_state_t* alloc_state(int n){ // alloc memory for sim_state_t
+//
+//         sim_state_t* state = new sim_state_t;
+//         float* rho = new float[n];
+//         float* v = new float[2*n];
+//         float* vh = new float[2*n];
+//         float* x = new float[2*n]; // 2 Dimensions (x,z)
+//         float* a = new float[2*n];
+//
+//         state->n = n;
+//         state->rho = rho;
+//         state->v = v;
+//         state->vh = vh;
+//         state->x = x;
+//         state->a = a;
+//         state->mass = 0;
+//
+//         return state;
+// }
 
-        float rd;
-        int p = 0;
-        for (float x = 0; x < 1; x += hh) {
-                for (float y = 0; y < 1; y += hh) {
-                        if (circ_indicator(x,y)) {
-                                rd = float(std::rand())/100000000000;
-                                s->x[2*p+0] = x;
-                                s->x[2*p+1] = y;
-                                s->v[2*p+0] = rd;
-                                s->v[2*p+1] = rd;
-                                ++p;
-                        }
-                }
-        }
-        return s;
-}
-
-sim_state_t* alloc_state(int n){ // alloc memory for sim_state_t
-
-        sim_state_t* state = new sim_state_t;
-        float* rho = new float[n];
-        float* v = new float[2*n];
-        float* vh = new float[2*n];
-        float* x = new float[2*n]; // 2 Dimensions (x,z)
-        float* a = new float[2*n];
-
-        state->n = n;
-        state->rho = rho;
-        state->v = v;
-        state->vh = vh;
-        state->x = x;
-        state->a = a;
-        state->mass = 0;
-
-        return state;
-}
-
-void check_state(sim_state_t* s){ //check whether particles are contained within domain (just for debugging)
-        for (int i = 0; i < s->n; ++i) {
-                float xi = s->x[2*i+0];
-                float yi = s->x[2*i+1];
-                assert( xi >= 0 || xi <= 1 );
-                assert( yi >= 0 || yi <= 1 );
-        }
-}
+// void check_state(sim_state_t* s){ //check whether particles are contained within domain (just for debugging)
+//         for (int i = 0; i < s->n; ++i) {
+//                 float xi = s->x[2*i+0];
+//                 float yi = s->x[2*i+1];
+//                 assert( xi >= 0 || xi <= 1 );
+//                 assert( yi >= 0 || yi <= 1 );
+//         }
+// }
 
 
 static void damp_reflect(int which, float barrier, float* x, float* v, float* vh) {

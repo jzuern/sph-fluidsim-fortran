@@ -6,9 +6,9 @@ program sph
 	!Last modified: 05/16/2016
 
 	use gnufor2       !Module: gnuplot fortran visualizations
-	use integrate     !Module: definition of integration functions
+	use integrate     !Module: definition of integration functions (leapfrog)
 	use sphfunctions  !Module: implementation of sph mechanics
-	use linkedlists   !Module: Linked lists definition
+	use linkedlists   !Module: Linked lists mechanics and bookkeeping
 	use util          !Module: utiliary functions
 
 	implicit none
@@ -50,28 +50,36 @@ type(systemstate)                 	    :: sstate
 ! Parse input parameter file
 call parse_input(simulation_parameter)
 
-! Initialize sim state Class instantiation (= Object)
-call initialize_state(sstate)
+! initialize particles
+call init_particles(sstate,simulation_parameter)
 
-! Initialize linked lists
+print *, "test"
+
+! Initialize linked lists (ll and lc)
+! call setup_neighbour_list(sstate, simulation_parameter, ll,lc)
+! call print_neighour_list(sstate, simulation_parameter, ll,lc)
+
+! First Frame calculation
+! call compute_accel(state, &params,ll,lc);
+! call leapfrog_start(state,dt);
+! call check_state(state);
 
 
-! ....
 
 
 ! Simulation loop
-nFrames = simulation_parameter(1)
+! nFrames = simulation_parameter(1)
 
 
-do i = 1,nFrames
-	
-end do
+! do i = 1,nFrames
+!
+! end do
 
 
 
 ! Cleanup
+call free_state(sstate)
 
-
-
+print *, "test"
 
 end program sph
