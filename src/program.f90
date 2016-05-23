@@ -84,9 +84,10 @@ do i = 1,nFrames
 	print *, "Calculating Step ", i, " of " , nFrames
 
 	do j = 1,nSteps_per_frame
-		!call compute_accel(sstate, simulation_parameter,ll,lc) !update values for accellerations
-		!call leapfrog_step(sstate, dt) 												!update velocities and positions based on previously calculated accelleration
-		!call check_state(sstate);  														!not working
+		call compute_accel(sstate, simulation_parameter,ll,lc) !update values for accellerations
+		call leapfrog_step(sstate, dt) 												!update velocities and positions based on previously calculated accelleration
+		call check_state(sstate);  														!not working
+		call print_neighour_list(sstate,simulation_parameter,ll,lc)
 	end do
 
 

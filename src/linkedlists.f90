@@ -35,7 +35,7 @@ contains
     double precision      :: rcut
     integer, dimension(2) :: nmax, nidx
 
-    print *, " in setup_neighbour_list"
+    ! print *, " in setup_neighbour_list"
     ntot = sstate%nParticles   ! total number of particles
     rcut = params(9)             ! is 9th element in sim_param vector....
 
@@ -57,7 +57,7 @@ contains
       lc(nidx(1),nidx(2)) = i
     end do
 
-    print *, "out print_neighour_list"
+    ! print *, "out print_neighour_list"
 
 
   end subroutine
@@ -98,7 +98,7 @@ contains
           end do
           print *, ! new line
         else
-          print *, " No particles in cell " , i , " " , j
+          ! print *, " No particles in cell " , i , " " , j
         end if
       end do
     end do

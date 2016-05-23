@@ -29,31 +29,6 @@ sim_param_t initialize_sim_param_t(std::vector<std::string> paramvector){
 
 void plotPoints(int frame,std::ofstream& out, int n, sim_state_t* s,sim_param_t params){
 
-        // if (initialize == true) {
-        //
-        //         double mx=0.5, my=0.5;
-        //         int mb=1;
-        //         while(mb != 3 && mb >= 0) {
-        //                 // Make the arrows point towards the mouse click.
-        //                 for(size_t i=0; i<arrows.size(); i++) {
-        //                         double x = arrows[i].get<0>();
-        //                         double y = arrows[i].get<1>();
-        //                         double dx = (mx-x) * 0.1;
-        //                         double dy = (my-y) * 0.1;
-        //                         arrows[i] = boost::make_tuple(x, y, dx, dy);
-        //                 }
-        //
-        //                 gp << "plot '-' with vectors notitle\n";
-        //                 gp.send1d(arrows);
-        //                 gp.getMouse(mx, my, mb, "Left click to place droplets, right click to exit.");
-        //                 printf("You pressed mouse button %d at x=%f y=%f\n", mb, mx, my);
-        //                 if(mb < 0) {
-        //                   initialize = false;
-        //                   printf("The gnuplot window was closed.\n");
-        //               }
-        //         }
-        //
-        // }
 
 
         float* x = s->x;
@@ -61,12 +36,6 @@ void plotPoints(int frame,std::ofstream& out, int n, sim_state_t* s,sim_param_t 
         for(int i = 0; i < n; i++) {
                 points.push_back(boost::make_tuple(x[2*i+0], x[2*i+1]));
         }
-
-        //
-        //
-        // gp << "pause mouse\n";
-        // gp << "if (defined(MOUSE_BUTTON)) print 'mouse click';  else print \"No mouse click.\"\n";
-
 
         gp << "set xrange [0:1]\n";
         gp << "set yrange [0:1]\n";
@@ -109,85 +78,85 @@ void plotPoints(int frame,std::ofstream& out, int n, sim_state_t* s,sim_param_t 
 //         // for(int i=0; i<n ; i++) {  std::cout << "rho[i] = " << rho[i] << std::endl;}
 //
 // }
-
-void compute_density_with_ll(sim_state_t* s, sim_param_t* params, int* ll, int **lc){
-        int n = s->n;
-        float*   rho = s->rho;
-        float*   x = s->x;
-        float mass = s->mass;
-        float h = params->h;
-        float h2 = h*h;
-        float h8 = (h2*h2)*(h2*h2);
-        float C = 4*s->mass / M_PI / h8;
-        memset(rho, 0, n*sizeof(float)); // sets values of rho to (double)0
-
-        int nmax[2];
-        int n1,n2;
-        float rcut = params->rcut; // rcut equal in each dimension
-        for(int i=0; i<2; i++) { // go through each dimension
-                nmax[i]=int(floor(1/rcut));
-        }
-
-
-        int ndx[]={1,1,0,-1};
-        int ndy[]={0,1,1,1};
-        int nx,ny;
-
-        for(int i=0; i<nmax[0]; i++) {
-                for(int j=0; j<nmax[1]; j++) {
-                        if(lc[i][j]!=-1) {
-                                n1=lc[i][j];
-                                while(n1 != -1) {
-                                        n2=ll[n1];
-                                        rho[n1] += 4*mass/M_PI/h2;
-                                        while(n2!=-1) {
-                                                float dx = x[2*n1+0]-x[2*n2+0];
-                                                float dy = x[2*n1+1]-x[2*n2+1];
-                                                float r2 = dx*dx + dy*dy;
-                                                float z = h2 - r2;
-                                                if (z > 0) {
-
-                                                        float rho_ij = C*z*z*z;
-
-                                                        // std::cout << "x[2*n1+0] = " << x[2*n1+0] << " x[2*n1+1] = " << x[2*n1+1] << "x[2*n2+0] = " << x[2*n2+0] << "x[2*n2+1] = " << x[2*n2+1] << std::endl;
-                                                        rho[n1] += rho_ij;
-                                                        rho[n2] += rho_ij;
-                                                }
-                                                // std::cout << "rho[i] = " << rho[n1] << ", rho[j] = " << rho[n2] << std::endl;
-                                                n2=ll[n2];
-                                        }
-                                        // Neighbpr cells
-                                        for(int no=0; no<4; no++) {
-                                                nx=i+ndx[no];
-                                                ny=j+ndy[no];
-
-                                                // Randbedigungen:
-                                                if(nx<0)           continue; // to end of loop...
-                                                if(nx>nmax[0]-1)   continue;
-                                                if(ny<0)           continue;
-                                                if(ny>nmax[1]-1)   continue;
-                                                // std::cout << "    checking neighbor cell " << nx << " " << ny << std::endl;
-                                                n2=lc[nx][ny];
-
-                                                while(n2!=-1) {
-                                                        float dx = x[2*n1+0]-x[2*n2+0];
-                                                        float dy = x[2*n1+1]-x[2*n2+1];
-                                                        float r2 = dx*dx + dy*dy;
-                                                        float z = h2 - r2;
-                                                        if (z > 0) {
-                                                                float rho_ij = C*z*z*z;
-                                                                rho[n1] += rho_ij;
-                                                                rho[n2] += rho_ij;
-                                                        }
-                                                        n2=ll[n2];
-                                                }
-                                        }
-                                        n1=ll[n1];
-                                }
-                        }
-                }
-        }
-}
+//
+// void compute_density_with_ll(sim_state_t* s, sim_param_t* params, int* ll, int **lc){
+//         int n = s->n;
+//         float*   rho = s->rho;
+//         float*   x = s->x;
+//         float mass = s->mass;
+//         float h = params->h;
+//         float h2 = h*h;
+//         float h8 = (h2*h2)*(h2*h2);
+//         float C = 4*s->mass / M_PI / h8;
+//         memset(rho, 0, n*sizeof(float)); // sets values of rho to (double)0
+//
+//         int nmax[2];
+//         int n1,n2;
+//         float rcut = params->rcut; // rcut equal in each dimension
+//         for(int i=0; i<2; i++) { // go through each dimension
+//                 nmax[i]=int(floor(1/rcut));
+//         }
+//
+//
+//         int ndx[]={1,1,0,-1};
+//         int ndy[]={0,1,1,1};
+//         int nx,ny;
+//
+//         for(int i=0; i<nmax[0]; i++) {
+//                 for(int j=0; j<nmax[1]; j++) {
+//                         if(lc[i][j]!=-1) {
+//                                 n1=lc[i][j];
+//                                 while(n1 != -1) {
+//                                         n2=ll[n1];
+//                                         rho[n1] += 4*mass/M_PI/h2;
+//                                         while(n2!=-1) {
+//                                                 float dx = x[2*n1+0]-x[2*n2+0];
+//                                                 float dy = x[2*n1+1]-x[2*n2+1];
+//                                                 float r2 = dx*dx + dy*dy;
+//                                                 float z = h2 - r2;
+//                                                 if (z > 0) {
+//
+//                                                         float rho_ij = C*z*z*z;
+//
+//                                                         // std::cout << "x[2*n1+0] = " << x[2*n1+0] << " x[2*n1+1] = " << x[2*n1+1] << "x[2*n2+0] = " << x[2*n2+0] << "x[2*n2+1] = " << x[2*n2+1] << std::endl;
+//                                                         rho[n1] += rho_ij;
+//                                                         rho[n2] += rho_ij;
+//                                                 }
+//                                                 // std::cout << "rho[i] = " << rho[n1] << ", rho[j] = " << rho[n2] << std::endl;
+//                                                 n2=ll[n2];
+//                                         }
+//                                         // Neighbpr cells
+//                                         for(int no=0; no<4; no++) {
+//                                                 nx=i+ndx[no];
+//                                                 ny=j+ndy[no];
+//
+//                                                 // Randbedigungen:
+//                                                 if(nx<0)           continue; // to end of loop...
+//                                                 if(nx>nmax[0]-1)   continue;
+//                                                 if(ny<0)           continue;
+//                                                 if(ny>nmax[1]-1)   continue;
+//                                                 // std::cout << "    checking neighbor cell " << nx << " " << ny << std::endl;
+//                                                 n2=lc[nx][ny];
+//
+//                                                 while(n2!=-1) {
+//                                                         float dx = x[2*n1+0]-x[2*n2+0];
+//                                                         float dy = x[2*n1+1]-x[2*n2+1];
+//                                                         float r2 = dx*dx + dy*dy;
+//                                                         float z = h2 - r2;
+//                                                         if (z > 0) {
+//                                                                 float rho_ij = C*z*z*z;
+//                                                                 rho[n1] += rho_ij;
+//                                                                 rho[n2] += rho_ij;
+//                                                         }
+//                                                         n2=ll[n2];
+//                                                 }
+//                                         }
+//                                         n1=ll[n1];
+//                                 }
+//                         }
+//                 }
+//         }
+// }
 
 
 void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
@@ -208,11 +177,9 @@ void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
         float*         a = state->a;
         int n = state->n;
 
-        //use neighbor list or not
-        bool useNeighborLists =  true;
 
         int nmax[2];
-        if (useNeighborLists) {
+
                 float rcut = params->rcut; // rcut equal in each dimension
                 for(int i=0; i<2; i++) { // go through each dimension
                         nmax[i]=int(floor(1/rcut));
@@ -227,7 +194,7 @@ void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
                 for(int i=0; i<n; i++) { // initialize with value -1 (empty)
                         ll[i]=-1;
                 }
-        }
+
 
         // Start with gravity and surface forces
         for (int i = 0; i < n; ++i) {
@@ -242,37 +209,6 @@ void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
 
         int nCalcs = 0;
 
-        if (!useNeighborLists) {
-                compute_density_without_ll(state,params);
-                // Now compute interaction forces
-                for (int i = 0; i < n; ++i) {
-                        const float rhoi = rho[i];
-                        // std::cout<<"rhoi = "<<rhoi<<std::endl;
-                        for (int j = i+1; j < n; ++j) {
-                                nCalcs += 1;
-                                float dx = x[2*i+0]-x[2*j+0];
-                                float dy = x[2*i+1]-x[2*j+1];
-                                float r2 = dx*dx + dy*dy;
-                                // std::cout  << r2 << " ";
-                                if (r2 < h2) {
-                                        const float rhoj = rho[j];
-                                        float q = sqrt(r2)/h;
-                                        float u = 1-q;
-                                        float w0 = C0 * u/rhoi/rhoj;
-                                        float wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q;
-                                        float wv = w0 * Cv;
-                                        float dvx = v[2*i+0]-v[2*j+0];
-                                        float dvy = v[2*i+1]-v[2*j+1];
-                                        a[2*i+0] += (wp*dx + wv*dvx);
-                                        a[2*i+1] += (wp*dy + wv*dvy);
-                                        a[2*j+0] -= (wp*dx + wv*dvx);
-                                        a[2*j+1] -= (wp*dy + wv*dvy);
-                                }
-                        }
-                }
-        }
-
-        else{ // use neighbor lists
 
                 // setting up updated neighbor list
                 setup_neighbour_list(params,state,ll,lc); // update linked lists for new particle positions
@@ -462,42 +398,42 @@ void compute_accel(sim_state_t* state, sim_param_t* params, int* ll, int **lc){
 //                 assert( yi >= 0 || yi <= 1 );
 //         }
 // }
-
-
-static void damp_reflect(int which, float barrier, float* x, float* v, float* vh) {
-        // Coefficient of resitiution
-        const float DAMP = 0.75;
-        // Ignore degenerate cases
-        if (v[which] == 0) return;
-        // Scale back the distance traveled based on time from collision
-        float tbounce = (x[which]-barrier)/v[which];
-        x[0] -= v[0]*(1-DAMP)*tbounce;
-        x[1] -= v[1]*(1-DAMP)*tbounce;
-        // Reflect the position and velocity
-        x[which] = 2*barrier-x[which];
-        v[which] = -v[which];
-        vh[which] = -vh[which];
-        // Damp the velocities
-        v[0] *= DAMP; vh[0] *= DAMP;
-        v[1] *= DAMP; vh[1] *= DAMP;
-}
-
-
-void reflect_bc(sim_state_t* s){
-        // Boundaries of the computational domain
-        const float XMIN = 0.0;
-        const float XMAX = 1.0;
-        const float YMIN = 0.0;
-        const float YMAX = 1.0;
-
-        float*  vh = s->vh;
-        float*  v = s->v;
-        float*  x = s->x;
-        int n = s->n;
-        for (int i = 0; i < n; ++i, x += 2, v += 2, vh += 2) {
-                if (x[0] < XMIN) damp_reflect(0, XMIN, x, v, vh);
-                if (x[0] > XMAX) damp_reflect(0, XMAX, x, v, vh);
-                if (x[1] < YMIN) damp_reflect(1, YMIN, x, v, vh);
-                if (x[1] > YMAX) damp_reflect(1, YMAX, x, v, vh);
-        }
-}
+//
+//
+// static void damp_reflect(int which, float barrier, float* x, float* v, float* vh) {
+//         // Coefficient of resitiution
+//         const float DAMP = 0.75;
+//         // Ignore degenerate cases
+//         if (v[which] == 0) return;
+//         // Scale back the distance traveled based on time from collision
+//         float tbounce = (x[which]-barrier)/v[which];
+//         x[0] -= v[0]*(1-DAMP)*tbounce;
+//         x[1] -= v[1]*(1-DAMP)*tbounce;
+//         // Reflect the position and velocity
+//         x[which] = 2*barrier-x[which];
+//         v[which] = -v[which];
+//         vh[which] = -vh[which];
+//         // Damp the velocities
+//         v[0] *= DAMP; vh[0] *= DAMP;
+//         v[1] *= DAMP; vh[1] *= DAMP;
+// }
+//
+//
+// void reflect_bc(sim_state_t* s){
+//         // Boundaries of the computational domain
+//         const float XMIN = 0.0;
+//         const float XMAX = 1.0;
+//         const float YMIN = 0.0;
+//         const float YMAX = 1.0;
+//
+//         float*  vh = s->vh;
+//         float*  v = s->v;
+//         float*  x = s->x;
+//         int n = s->n;
+//         for (int i = 0; i < n; ++i, x += 2, v += 2, vh += 2) {
+//                 if (x[0] < XMIN) damp_reflect(0, XMIN, x, v, vh);
+//                 if (x[0] > XMAX) damp_reflect(0, XMAX, x, v, vh);
+//                 if (x[1] < YMIN) damp_reflect(1, YMIN, x, v, vh);
+//                 if (x[1] > YMAX) damp_reflect(1, YMAX, x, v, vh);
+//         }
+// }

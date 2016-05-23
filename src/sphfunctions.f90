@@ -234,7 +234,56 @@ contains
   end subroutine
 
 
-  subroutine damp_reflect()
+  subroutine damp_reflect(which, barrier, sstate)
+    use util
+    type (systemstate)  :: sstate
+    integer             :: which
+    double precision    :: barrier
+    double precision    :: damp, tbounce
+
+
+
+    ! static void damp_reflect(int which, float barrier, float* x, float* v, float* vh) {
+    !         // Coefficient of resitiution
+    !         const float DAMP = 0.75;
+    !         // Ignore degenerate cases
+    !         if (v[which] == 0) return;
+    !         // Scale back the distance traveled based on time from collision
+    !         float tbounce = (x[which]-barrier)/v[which];
+    !         x[0] -= v[0]*(1-DAMP)*tbounce;
+    !         x[1] -= v[1]*(1-DAMP)*tbounce;
+    !         // Reflect the position and velocity
+    !         x[which] = 2*barrier-x[which];
+    !         v[which] = -v[which];
+    !         vh[which] = -vh[which];
+    !         // Damp the velocities
+    !         v[0] *= DAMP; vh[0] *= DAMP;
+    !         v[1] *= DAMP; vh[1] *= DAMP;
+    ! }
+
+    !Coefficient of resitiution
+    damp = 0.75
+
+    !ignore degenerate cases
+    if (sstate%v(which) == 0) return
+
+    !scale back the distance traveled based on time from collision
+    tbounce = (sstate%x(which)-barrier) / sstate%v(which)
+
+    sstate%x(which+0) = sstate%x(which+0) - sstate%v(which+0) * (1-damp)*tbounce
+    sstate%x(which+1) = sstate%x(which+1) - sstate%v(which+1) * (1-damp)*tbounce
+
+    ! reflect position and velocity
+    sstate%x(which+0) = 2*barrier - sstate%x(which+0)
+    sstate%v(which+0) = -sstate%v(which+0)
+    sstate%vh(which+0)= -sstate%vh(which+0)
+
+
+    ! damp velocities
+    sstate%v(which+0)  = sstate%v(which+0)* damp
+    sstate%vh(which+0) = sstate%vh(which+0)* damp
+    sstate%v(which+1)  = sstate%v(which+1)* damp
+    sstate%vh(which+1)  = sstate%vh(which+1)* damp
 
 
   end subroutine
@@ -245,40 +294,32 @@ contains
       use util
       type (systemstate) :: sstate
 
-      ! void reflect_bc(sim_state_t* s){
-      !
-      !         float*  vh = s->vh;
-      !         float*  v = s->v;
-      !         float*  x = s->x;
-      !         int n = s->n;
-      !         for (int i = 0; i < n; ++i, x += 2, v += 2, vh += 2) {
-      !                 if (x[0] < XMIN) damp_reflect(0, XMIN, x, v, vh);
-      !                 if (x[0] > XMAX) damp_reflect(0, XMAX, x, v, vh);
-      !                 if (x[1] < YMIN) damp_reflect(1, YMIN, x, v, vh);
-      !                 if (x[1] > YMAX) damp_reflect(1, YMAX, x, v, vh);
-      !         }
-      ! }
       integer :: i,n
       ! Boundaries of computational domain
-      double precision :: xmin = 0.0
-      double precision :: xmax = 1.0
-      double precision :: ymin = 0.0
-      double precision :: ymax = 1.0
+      double precision :: xmin = 0.0d0
+      double precision :: xmax = 1.0d0
+      double precision :: ymin = 0.0d0
+      double precision :: ymax = 1.0d0
 
       n = sstate%nParticles
-      do i = 1,n
-        if (sstate%x(1) < xmin) then
-          call damp_reflect(0,xmin,x,v,vh)
+      do i = 1,n ! TODO: correct??
+
+        if (sstate%x(2*i-1) < xmin) then
+          call damp_reflect(2*i-1,xmin,sstate)
         end if
-        if (sstate%x(1) > xmax) then
-          call damp_reflect()
+
+        if (sstate%x(2*i-1) > xmax) then
+          call damp_reflect(2*i-1,xmax,sstate)
         end if
-        if (sstate%x(2) < ymin) then
-          call damp_reflect()
+
+        if (sstate%x(2*i-0) < ymin) then
+          call damp_reflect(2*i-0,ymin,sstate)
         end if
-        if (sstate%x(2) > ymax) then
-          call damp_reflect()
+
+        if (sstate%x(2*i-0) > ymax) then
+          call damp_reflect(2*i-0,ymax,sstate)
         end if
+
       end do
 
     end subroutine
@@ -286,16 +327,145 @@ contains
 
 
 
-  subroutine compute_accel(s,params,ll,lc)
+  subroutine compute_accel(sstate,params,ll,lc)
     use util
-    type (systemstate)           :: s
+    use linkedlists
+
+    type (systemstate)           :: sstate
     DOUBLE PRECISION, DIMENSION(9)  :: params
-    integer, dimension(:)        :: ll
-    integer, dimension(:,:)      :: lc
+    integer, allocatable, dimension(:)        :: ll
+    integer, allocatable, dimension(:,:)      :: lc
+    integer                      :: n  !number of particles
+    integer,dimension(2)         :: nmax
+    integer                       :: i,j,no
+    integer, dimension(4) :: ndx,ndy
+    integer :: n1,n2,nx,ny
+    double PRECISION :: h,rho0,k,mu,g,mass,h2,rcut
+    double PRECISION :: c0,cp,cv
+    integer          :: ncalcs  ! number of performed calculations (for performance testing)
+    double PRECISION :: dx,dy,r2
+    double precision :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
 
-    ! TODO: implement body
+
+    h         = params(3)
+    rho0      = params(5)
+    k         = params(6)
+    mu        = params(7)
+    g         = params(8)
+    mass      = sstate%mass
+    h2        = h*h
+
+    rcut = params(9)             ! is 9th element in sim_param vector....
+    nmax(1) = int(floor(1/rcut)) ! maximum number of cells in each dimension
+    nmax(2) = int(floor(1/rcut)) ! maximum number of cells in each dimension
+
+    !clearing ll and lc
+    do i = 1,nmax(1)
+      do j = 1,nmax(2)
+        lc(i,j) = -1
+      end do
+    end do
+    do i = 1,n
+      ll(i) = -1
+    end do
 
 
+    ! start with gravity and surface forces
+    do i = 1,n
+      sstate%a(2*i-1) = 0
+      sstate%a(2*i-0) = -g
+    end do
+
+    ! constants for interaction term
+    c0 = mass/pi/(h2*h2)
+    cp = 15*k
+    cv = -40*mu
+
+    nCalcs = 0
+
+    call setup_neighbour_list(sstate,params,ll,lc)
+    call compute_density_with_ll(sstate,params,ll,lc)
+
+    ndx = (/ 1,1,0,-1/)
+    ndy = (/ 0,1,1,1 /)
+
+
+
+
+    do i = 1,nmax(1)
+      do j = 1,nmax(2)
+        if (lc(i,j) /= -1) then
+          n1 = lc(i,j)
+          do while (n1 /= -1)
+            n2 = ll(n1)
+            rhoi = sstate%rho(n1)
+            do while(n2 /= -1)
+              nCalcs = nCalcs + 1
+              dx = sstate%x(2*n2-1) - sstate%x(2*n1-1);
+              dy = sstate%x(2*n2-0) - sstate%x(2*n1-0);
+              r2 = dx*dx + dy*dy
+              if(r2 < h2) then
+                rhoj = sstate%rho(n2)
+                q = sqrt(r2)/h
+                u = 1-q
+                w0 = c0*u/rhoi/rhoj
+                wp = w0*cp*(rhoi+rhoj-2*rho0) * u/q
+                wv = w0*cv
+                dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
+                dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
+
+                sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
+                sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
+                sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+              end if
+              n2 = ll(n2)
+            end do
+
+            !neighbor cells
+            do no = 1,4
+              nx = i + ndx(no)
+              ny = j + ndy(no)
+
+              ! boundaries
+              if(nx < 0)         continue
+              if(nx>nmax(1)-1)   continue
+              if(ny<0)           continue
+              if(ny>nmax(2)-1)   continue
+
+              n2 = lc(nx,ny)
+
+              do  while( n2 /= -1)
+                nCalcs = nCalcs + 1
+                dx = sstate%x(2*n2-1)-sstate%x(2*n1-1)
+                dy = sstate%x(2*n2-0)-sstate%x(2*n1-0)
+                r2 = dx*dx + dy*dy
+
+                if (r2 < h2) then
+                  rhoj = sstate%rho(n2)
+                  q = sqrt(r2)/h
+                  u = 1-q
+                  w0 = C0 * u/rhoi/rhoj
+                  wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q
+                  wv = w0 * Cv
+                  dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
+                  dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
+
+                  sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
+                  sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                  sstate%a(2*n2-1) = sstate%a(2*n1-1) + (wp*dx + wv*dvx)
+                  sstate%a(2*n2-0) = sstate%a(2*n1-0) + (wp*dy + wv*dvy)
+
+
+                end if
+                n2 = ll(n2)
+              end do
+            end do
+            n1 = ll(n1)
+          end do
+        end if
+      end do
+    end do
 
 
   end subroutine
