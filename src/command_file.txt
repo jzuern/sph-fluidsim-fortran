@@ -1,0 +1,8 @@
+set terminal x11  title  "Gnuplot"
+unset key
+set xrange [0:1]
+set yrange [0:1]
+set grid
+plot "data_file.txt" using 1:2 with points pointtype  5 linecolor rgb "blue" linewidth 1
+pause 0.100E+00
+q

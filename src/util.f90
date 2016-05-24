@@ -1,16 +1,17 @@
 module util
 
-  ! Auxiliary utility types and subroutines and functions
+  !Auxiliary utility types, subroutines, and functions
 
   !Created by Jannik Zuern on 05/16/2016
-	!Last modified: 05/19/2016
+	!Last modified: 05/24/2016
 
 
 implicit none
 
 
 private
-public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator , free_state , plot_points , Pi
+public :: systemstate, sim_parameter, alloc_state, parse_input, circ_indicator, box_indicator , &
+free_state , plot_data_immediately, plot_data_from_file,write_data_to_file , initialize_parameters, Pi
 
   double precision, PARAMETER :: Pi = 3.1415927d0
 
@@ -30,7 +31,24 @@ public :: systemstate, alloc_state, parse_input, circ_indicator, box_indicator ,
 
   end type systemstate
 
+  type sim_parameter
 
+    ! The sim_parameter data type holds all parameter that are relevant for
+    ! the simulation. I.e. particle size, time step size, number of frames to
+    ! calculate, etc.
+
+
+     integer          :: nframes            ! Number of frames
+     integer          :: nSteps_per_frame   ! Number of steps per frame. Default: 100
+     double precision :: h                  ! Size of particles (radius). Also: Distance of particles in initial configuration
+     double precision :: dt                 ! Time step size Default: 1E-4
+     double precision :: rho0               ! Reference density Default: 1000
+     integer          :: k                  ! Bulk modulus (Kompressionsmodul) Default: 1E3
+     double precision :: mu                 ! Viscosity Default: 0.1
+     double precision :: g                  ! gravity strength Default: 9.81
+     double precision :: rcut               ! Cutoff radius (in multiples of total size of simulation grid for linked lists neighbor tracking
+
+  end type sim_parameter
 
 
 
@@ -45,20 +63,19 @@ contains
 
     res = 0
     ! print *, x , y
-    tmp = (x > 0.3) .AND. (y > 0.3) .AND. (x < 0.35) .AND. (y < 0.35)
+    tmp = (x > 0.3) .AND. (y > 0.3) .AND. (x < 0.7) .AND. (y < 0.7)
     if (tmp .eqv. .true.) THEN
-
       res = 1
     end if
 
   end function
 
 
-  integer function circ_indicator (x,y) result(res)
+  function circ_indicator (x,y) result(res)
     implicit none
     double precision, intent(in)    :: x,y
     logical                         :: tmp
-    ! integer                         :: res
+    integer                         :: res
     double precision                :: dx,dy,r2
 
     dx = x-0.5
@@ -75,8 +92,10 @@ contains
 
 
 
-  subroutine alloc_state(state)
+  subroutine alloc_state(state,parameter)
     type(systemstate) :: state !system state object
+    DOUBLE PRECISION, DIMENSION(9)  :: parameter
+    double precision :: rho0
 
     ! allocate all arrays
     allocate(state%x   (2*state%nParticles))
@@ -85,11 +104,13 @@ contains
     allocate(state%a   (2*state%nParticles))
     allocate(state%rho (  state%nParticles))
 
-    state%x = 0
-    state%v = 0
-    state%vh = 0
-    state%a = 0
-    state%rho = 0
+    state%x = 0.d0
+    state%v = 0.d0
+    state%vh = 0.d0
+    state%a = 0.d0
+    rho0 = parameter(5)
+    state%rho = rho0
+    state%mass = 1.d0
 
   end subroutine
 
@@ -135,46 +156,72 @@ contains
   end subroutine
 
 
+  subroutine write_data_to_file(sstate,i)
 
-  subroutine plot_points(sstate)
+    type(systemstate)                           :: sstate
+    integer                                     :: n,i
+    double precision, allocatable, dimension(:) :: x,y
+    character(len=100) :: filename
+    character(len=5)   :: dummy
+    character(len=8)   :: fmt ! format descriptor
+
+    fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+
+    write (dummy,fmt) i ! converting integer to string using a 'internal file'
+    filename='data/frame'//trim(dummy)//'.dat'
+    open(unit = 10, file = filename)
+
+    n = sstate%nParticles
+    x = sstate%x(1:2*n:2)
+    y = sstate%x(2:2*n:2)
+
+    write (10,*) x, y
+    close(10)
+  end subroutine
+
+
+  subroutine plot_data_from_file(sstate,i)
+    type(systemstate)                           :: sstate
+    integer                                     :: i
+      ! TODO: implement
+  end subroutine
+
+
+  subroutine plot_data_immediately(sstate,i)
     use gnufor2
 
-    type(systemstate) :: sstate
-    integer :: n
+    type(systemstate)                           :: sstate
+    integer                                     :: n,i
     double precision, allocatable, dimension(:) :: x,y
 
     n = sstate%nParticles
+    x = sstate%x(1:2*n:2)
+    y = sstate%x(2:2*n:2)
 
-
-    x = sstate%x(1:n:2)
-    y = sstate%x(2:n:2)
-
-    print *, sstate%x(1:n:2)
-    print *, sstate%x(2:n:2)
-
-
-
-    ! 	integer, parameter	:: N1=50
-    ! 	real(kind=8)		:: x1(N1), f1(N1)
-    ! 	integer :: i
-    ! ! generate data for 2D plots
-    ! 	do  i=1,N1
-    ! 		x1(i)=5.0*i/N1
-    ! 	end do
-    ! 	f1=sin(2*x1)
-
-
-
-
-    	! call plot(x1,f1,'' 5.'') ! plotting with points
-      call plot(x,y," 5.", pause=0.5)
-
-    	print *,'press ENTER to go to the next frame'
-    	read  *
-
-
-
+    call plot(x,y," 5.", pause=0.1, persist='no')
   end subroutine
+
+
+
+  function initialize_parameters (params) result(param_type)
+    implicit none
+    DOUBLE PRECISION, DIMENSION(9)             :: params
+    type(sim_parameter)                        :: param_type
+
+    param_type%nframes           = params(1)
+    param_type%nSteps_per_frame  = params(2)
+    param_type%h                 = params(3)
+    param_type%dt                = params(4)
+    param_type%rho0              = params(5)
+    param_type%k                 = params(6)
+    param_type%mu                = params(7)
+    param_type%g                 = params(8)
+    param_type%rcut              = params(9)
+
+
+  end function
+
+
 
 
 

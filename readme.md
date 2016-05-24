@@ -7,9 +7,15 @@ Simulation parameters:    	 Command line argument to setup file setup.dat
 
 
 // TODO:
+SPECIFIC
+- Debug:
+	- particle not interacting with each other
+	- Error in `./program': free(): invalid next size (normal): 0x00000000010f1e50 when program finishes
 - make parametertype from param_vector (otherwise very hard to read)
 - separate src directory from .o / executable directory
-- debug linked lists
+
+
+GENERAL
 - when to use interface?
 - when to use public/private in module?
 - when to use intent(in), intent(out), intent(inout) ?

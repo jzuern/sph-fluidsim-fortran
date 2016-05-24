@@ -4,14 +4,7 @@ module linkedlists
   ! Implementation of functions and subroutines for linked lists bookkeeping
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/19/2016
-
-  ! To implement functions:
-  ! - setup_neighbour_list
-  ! - print_neighour_list
-  ! - init_lc
-  ! - init_ll
-
+  !Last modified: 05/24/2016
 
 
 implicit none
@@ -57,8 +50,6 @@ contains
       lc(nidx(1),nidx(2)) = i
     end do
 
-    ! print *, "out print_neighour_list"
-
 
   end subroutine
 
@@ -91,9 +82,10 @@ contains
 
         if (lc(i,j) /= -1) THEN
           n = lc(i,j)
+          print *, "cell ", i,j, ": "
 
           do while ( n /= -1)
-            print *, "cell ", i,j, "particle ", n , ",coordinates: " , sstate%x(2*n-1) , " " , sstate%x(2*n-0)
+             print*, "particle ", n , ",coordinates: " , sstate%x(2*n-1) , " " , sstate%x(2*n-0)
             n = ll(n)
           end do
           print *, ! new line

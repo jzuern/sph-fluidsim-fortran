@@ -3,7 +3,7 @@ module sphfunctions
   ! Implementation of functions and subroutines for the SPH method
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/19/2016
+  !Last modified: 05/24/2016
 
 
 implicit none
@@ -23,9 +23,11 @@ contains
     double precision, dimension(9)     :: params
 
     call place_particles(sstate,params)
+
+
     call normalize_mass(sstate,params)
 
-    print *, "init particles completed"
+
   end subroutine
 
 
@@ -56,7 +58,7 @@ contains
   subroutine normalize_mass(sstate,params)
     use util
     type (systemstate)             :: sstate
-      DOUBLE PRECISION, DIMENSION(9)  :: params
+    DOUBLE PRECISION, DIMENSION(9)  :: params
     double precision               :: rho0   ! reference density
     double precision               :: rho2s,rhos
     integer                        :: i
@@ -65,7 +67,7 @@ contains
     rho2s = 0.d0
     rho0 = params(5)
 
-    sstate%mass = 1
+    sstate%mass = 1.d0
 
     do i = 1,sstate%nParticles
       rho2s = rho2s + sstate%rho(i)*sstate%rho(i)
@@ -73,8 +75,6 @@ contains
     end do
 
     sstate%mass = sstate%mass * (rho0*rhos / rho2s)
-
-
 
   end subroutine
 
@@ -94,7 +94,7 @@ contains
     integer              :: i,j
     double precision     :: mass,h,h2,h8,C,rcut
 
-    real :: dx,dy,r2,z, rho_ij
+    double precision :: dx,dy,r2,z, rho_ij
 
     h = params(3)
     h2 = h*h
@@ -102,6 +102,10 @@ contains
 
     n          = sstate%nParticles
     mass       = sstate%mass
+    !
+    ! print *, "in compute_density_with_ll"
+    ! print *, sstate%rho
+    ! print *, " h2 = " , h2, mass, Pi
 
     ndx = (/1,1,0,-1 /)
     ndy = (/0,1,1, 1 /)
@@ -120,6 +124,7 @@ contains
           do while (n1 /= -1)
             n2 = ll(n1)
             sstate%rho(n1) = sstate%rho(n1) + 4*mass/Pi/h2
+
 
             do while(n2 /= -1)
               dx = sstate%x(2*n1-1) - sstate%x(2*n2-1)
@@ -167,6 +172,8 @@ contains
       end do
     end do
 
+
+
   end subroutine
 
 
@@ -183,7 +190,7 @@ contains
     double precision                      :: x,y, rd
 
     h = params(3) ! size of particles
-    hh = h/1.0d0  ! why?
+    hh = h/1.1d0  ! why?
 
 
     count = 0
@@ -202,7 +209,7 @@ contains
     print *, "Number of particles in simulation: " , count
 
     sstate%nParticles = count     ! set number of particles to counted value
-    call alloc_state(sstate)      ! allocate fields for x,v,vh,a
+    call alloc_state(sstate,params)      ! allocate fields for x,v,vh,a
 
     p = 1 ! particle iterator
 
@@ -214,8 +221,8 @@ contains
         if (box_indicator(x,y) /= 0) THEN
           ! CALL init_random_seed()         ! TODO: do I need initialization of random seed?
           CALL RANDOM_NUMBER(rd)            ! random number between 0 and 1
-          rd = rd * 0.000001d0              ! TODO: what is correct size for this?
-          print *, x , y , rd
+          rd = rd * 0.01d0              ! TODO: what is correct size for this?
+
           sstate%x(2*p-1) = x;
           sstate%x(2*p-0) = y;
           sstate%v(2*p-1) = rd; ! initialize with small initial velocity (-> no symmetries in behaviour)
@@ -228,28 +235,23 @@ contains
       x = x + hh
     end do
 
-    print *, "placed particles"
-
-
   end subroutine
 
 
-  subroutine damp_reflect(which, barrier, sstate)
+  subroutine damp_reflect(i,which, barrier, sstate)
     use util
     type (systemstate)  :: sstate
-    integer             :: which
+    integer             :: which,i
     double precision    :: barrier
     double precision    :: damp, tbounce
 
-
+    !ignore degenerate cases
+    ! if (sstate%v(i+which) == 0) then
+    !   return
+    ! end if
 
     ! static void damp_reflect(int which, float barrier, float* x, float* v, float* vh) {
-    !         // Coefficient of resitiution
-    !         const float DAMP = 0.75;
-    !         // Ignore degenerate cases
-    !         if (v[which] == 0) return;
-    !         // Scale back the distance traveled based on time from collision
-    !         float tbounce = (x[which]-barrier)/v[which];
+
     !         x[0] -= v[0]*(1-DAMP)*tbounce;
     !         x[1] -= v[1]*(1-DAMP)*tbounce;
     !         // Reflect the position and velocity
@@ -264,26 +266,23 @@ contains
     !Coefficient of resitiution
     damp = 0.75
 
-    !ignore degenerate cases
-    if (sstate%v(which) == 0) return
-
     !scale back the distance traveled based on time from collision
-    tbounce = (sstate%x(which)-barrier) / sstate%v(which)
+    tbounce = (sstate%x(i+which)-barrier) / sstate%v(i+which)
 
-    sstate%x(which+0) = sstate%x(which+0) - sstate%v(which+0) * (1-damp)*tbounce
-    sstate%x(which+1) = sstate%x(which+1) - sstate%v(which+1) * (1-damp)*tbounce
+    sstate%x(i+0) = sstate%x(i+0) - sstate%v(i+0) * (1-damp)*tbounce
+    sstate%x(i+1) = sstate%x(i+1) - sstate%v(i+1) * (1-damp)*tbounce
 
     ! reflect position and velocity
-    sstate%x(which+0) = 2*barrier - sstate%x(which+0)
-    sstate%v(which+0) = -sstate%v(which+0)
-    sstate%vh(which+0)= -sstate%vh(which+0)
+    sstate%x( i+which) = 2*barrier -sstate%x(i+which)
+    sstate%v( i+which) =           -sstate%v(i+which)
+    sstate%vh(i+which) =           -sstate%vh(i+which)
 
 
     ! damp velocities
-    sstate%v(which+0)  = sstate%v(which+0)* damp
-    sstate%vh(which+0) = sstate%vh(which+0)* damp
-    sstate%v(which+1)  = sstate%v(which+1)* damp
-    sstate%vh(which+1)  = sstate%vh(which+1)* damp
+    sstate%v(i+0)  = sstate%v(i+0)* damp
+    sstate%vh(i+0) = sstate%vh(i+0)* damp
+    sstate%v(i+1)  = sstate%v(i+1)* damp
+    sstate%vh(i+1)  = sstate%vh(i+1)* damp
 
 
   end subroutine
@@ -295,6 +294,7 @@ contains
       type (systemstate) :: sstate
 
       integer :: i,n
+
       ! Boundaries of computational domain
       double precision :: xmin = 0.0d0
       double precision :: xmax = 1.0d0
@@ -302,22 +302,27 @@ contains
       double precision :: ymax = 1.0d0
 
       n = sstate%nParticles
-      do i = 1,n ! TODO: correct??
 
-        if (sstate%x(2*i-1) < xmin) then
-          call damp_reflect(2*i-1,xmin,sstate)
+      do i = 1,2*n,2 ! correct
+
+        if (sstate%x(i) < xmin) then
+          print *, "particle at left wall"
+          call damp_reflect(i,0,xmin,sstate)
         end if
 
-        if (sstate%x(2*i-1) > xmax) then
-          call damp_reflect(2*i-1,xmax,sstate)
+        if (sstate%x(i) > xmax) then
+          print *, "particle at right wall"
+          call damp_reflect(i,0,xmax,sstate)
         end if
 
-        if (sstate%x(2*i-0) < ymin) then
-          call damp_reflect(2*i-0,ymin,sstate)
+        if (sstate%x(i+1) < ymin) then
+          print *, "particle at bottom"
+          call damp_reflect(i,1,ymin,sstate)
         end if
 
-        if (sstate%x(2*i-0) > ymax) then
-          call damp_reflect(2*i-0,ymax,sstate)
+        if (sstate%x(i+1) > ymax) then
+          print *, "particle at top"
+          call damp_reflect(i,1,ymax,sstate)
         end if
 
       end do
@@ -346,6 +351,7 @@ contains
     double PRECISION :: dx,dy,r2
     double precision :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
 
+    n         = sstate%nParticles
 
     h         = params(3)
     rho0      = params(5)
@@ -370,10 +376,11 @@ contains
     end do
 
 
-    ! start with gravity and surface forces
+    ! start with gravity forces
     do i = 1,n
       sstate%a(2*i-1) = 0
-      sstate%a(2*i-0) = -g
+      sstate%a(2*i-0) = (-1)*g
+      ! print *, "sstate%a(2*i) = " ,sstate%a(2*i-0)
     end do
 
     ! constants for interaction term
@@ -388,9 +395,6 @@ contains
 
     ndx = (/ 1,1,0,-1/)
     ndy = (/ 0,1,1,1 /)
-
-
-
 
     do i = 1,nmax(1)
       do j = 1,nmax(2)
@@ -441,15 +445,23 @@ contains
                 dy = sstate%x(2*n2-0)-sstate%x(2*n1-0)
                 r2 = dx*dx + dy*dy
 
+
+
                 if (r2 < h2) then
                   rhoj = sstate%rho(n2)
                   q = sqrt(r2)/h
                   u = 1-q
+                  !
+                  ! print *, r2,h2,q,rhoi,rhoj,rho0
+
                   w0 = C0 * u/rhoi/rhoj
                   wp = w0 * Cp * (rhoi+rhoj-2*rho0) * u/q
                   wv = w0 * Cv
                   dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
                   dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
+
+                  ! print *, w0
+                  ! print *, sstate%v
 
                   sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
                   sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)

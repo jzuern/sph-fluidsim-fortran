@@ -19,9 +19,8 @@ PROGRAMS = program
 
 # "make" builds all
 all: $(PROGRAMS)
-
-program.o: util.o gnufor2.o integrate.o linkedlists.o sphfunctions.o 
-program:   util.o gnufor2.o integrate.o linkedlists.o sphfunctions.o
+program.o: gnufor2.o util.o  linkedlists.o sphfunctions.o integrate.o
+program:   gnufor2.o util.o  linkedlists.o sphfunctions.o integrate.o
 
 # General rule for building prog from prog.o; $^ (GNU extension) is
 # used in order to list additional object files on which the
@@ -43,7 +42,8 @@ program:   util.o gnufor2.o integrate.o linkedlists.o sphfunctions.o
 
 clean:
 	rm -f *.o *.mod *.MOD
-
+	# first clean, then make new
+	make
 run:
 	./program
 
