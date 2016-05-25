@@ -1,8 +1,9 @@
-set terminal x11  title  "Gnuplot"
+set terminal  x11 size 1200,1200
+set output "date_25-05-2016_time_14:48:06.415"
 unset key
 set xrange [0:1]
 set yrange [0:1]
 set grid
 plot "data_file.txt" using 1:2 with points pointtype  5 linecolor rgb "blue" linewidth 1
-pause 0.100E+00
+pause 0.200E+00
 q

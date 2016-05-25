@@ -33,20 +33,23 @@ contains
     rcut = params(9)             ! is 9th element in sim_param vector....
 
 
-    nmax(1) = int(floor(1/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
     ! print *, ntot, rcut, nmax(1), nmax(2)
     do i = 1,ntot
-      nidx(1) = int((floor((sstate%x(2*i-1))/rcut))); !x coordinate
-      nidx(1) = min(nidx(1),nmax(1)-1)
-      nidx(1) = max(nidx(1),0)
+      nidx(1) = int(floor((sstate%x(2*i-1))/rcut)); !x coordinate
+      nidx(1) = min(nidx(1),nmax(1))
+      nidx(1) = max(nidx(1),1)
 
-      nidx(2) = int((floor((sstate%x(2*i-0))/rcut))); !y coordinate
-      nidx(2) = min(nidx(2),nmax(2)-1)
-      nidx(2) = max(nidx(2),0)
+      nidx(2) = int(floor((sstate%x(2*i-0))/rcut)); !y coordinate
+      nidx(2) = min(nidx(2),nmax(2))
+      nidx(2) = max(nidx(2),1)
+
+      ! print *, nidx(1), nidx(2)
 
       ll(i) = lc(nidx(1),nidx(2))
+      
       lc(nidx(1),nidx(2)) = i
     end do
 
@@ -73,8 +76,8 @@ contains
     rcut = params(9)             ! is 9th element in sim_param vector....
 
 
-    nmax(1) = int(floor(1/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
     do i = 1, nmax(1)
 
@@ -120,9 +123,6 @@ contains
   end subroutine
 
 
-
-
-
   subroutine init_lc(sstate, params, lc)
     use util
     type(systemstate)                        :: sstate
@@ -137,8 +137,8 @@ contains
     rcut = params(9) ! cutoff radius
 
 
-    nmax(1) = int(floor(1/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
     allocate(lc(nmax(1),nmax(2)))
 

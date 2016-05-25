@@ -63,7 +63,7 @@ contains
 
     res = 0
     ! print *, x , y
-    tmp = (x > 0.3) .AND. (y > 0.3) .AND. (x < 0.7) .AND. (y < 0.7)
+    tmp = (x > 0.3d0) .AND. (y > 0.0d0) .AND. (x < 0.0d0) .AND. (y < 0.7d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -78,12 +78,12 @@ contains
     integer                         :: res
     double precision                :: dx,dy,r2
 
-    dx = x-0.5
-    dy = y-0.6
+    dx = x-0.2d0
+    dy = y-0.2d0
     r2 = dx*dx + dy*dy
     res = 0
 
-    tmp = (r2 > 0.1*0.1) .AND. (r2 < 0.3*0.3)
+    tmp = (r2 > 0.0d0*0.0d0) .AND. (r2 < 0.3d0*0.3d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -104,13 +104,13 @@ contains
     allocate(state%a   (2*state%nParticles))
     allocate(state%rho (  state%nParticles))
 
-    state%x = 0.d0
-    state%v = 0.d0
-    state%vh = 0.d0
-    state%a = 0.d0
-    rho0 = parameter(5)
-    state%rho = rho0
-    state%mass = 1.d0
+    state%x       = 0.d0
+    state%v       = 0.d0
+    state%vh      = 0.d0
+    state%a       = 0.d0
+    rho0          = parameter(5)
+    state%rho     = rho0
+    state%mass    = 1.0d0
 
   end subroutine
 
@@ -125,8 +125,8 @@ contains
     deallocate(state%a  )
     deallocate(state%rho)
 
-
   end subroutine
+
 
   subroutine parse_input(parameter)
 
@@ -198,7 +198,7 @@ contains
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
 
-    call plot(x,y," 5.", pause=0.1, persist='no')
+    call plot(x,y," 5.", pause=0.2, persist='no', terminal=" x11 size 1200,1200")
   end subroutine
 
 

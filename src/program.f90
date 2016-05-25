@@ -33,6 +33,7 @@ type(sim_parameter)											:: params               ! parameter of simulation
 double precision												:: dt 									! (constant) time step for numerical integration
 
 
+! wipe data directory from old files
 
 
 
@@ -41,7 +42,7 @@ call parse_input(simulation_parameter)
 dt = simulation_parameter(4)
 
 ! initialize particles
-call init_particles(sstate,simulation_parameter)
+call init_particles(sstate,simulation_parameter,ll,lc)
 
 ! initialize linked lists
 call init_ll(sstate,simulation_parameter,ll)
@@ -68,12 +69,16 @@ nSteps_per_frame 		= simulation_parameter(2)
 do i = 1,nFrames
 	print *, "Calculating Step ", i, " of " , nFrames
 	do j = 1,nSteps_per_frame
+		! print *, "                    Calculating Sub-Step ", j
 		call compute_accel(sstate, simulation_parameter,ll,lc) !update values for accellerations
 		call leapfrog_step(sstate, dt) 												 !update velocities and positions based on previously calculated accelleration
 		call check_state(sstate);  												 	   !not working
 	end do
+
 	call plot_data_immediately(sstate,i)
-	call write_data_to_file(sstate,i)
+	! call write_data_to_file(sstate,i)
+
+
 end do
 
 do i = 1,nFrames
@@ -85,5 +90,7 @@ end do
 ! Cleanup
 call free_state(sstate)
 
+! don't end program
+read *,
 
 end program sph

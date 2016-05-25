@@ -16,25 +16,18 @@ module integrate
     use sphfunctions   ! in order to call reflect_bc
     type(systemstate) :: state
     double precision  :: dt
-
-    print *, dt
-
-
-    state%vh = state%vh + (state%a  * dt)
-    state%v  = state%vh + (state%a  * dt/2)
-    state%x  = state%x  + (state%vh * dt)
+    integer :: i
 
 
-    ! const float*  a = s->a;
-    ! float*  vh = s->vh;
-    ! float*  v = s->v;
-    ! float*  x = s->x;
-    ! int n = s->n;
-    !
-    ! for (int i = 0; i < 2*n; ++i) vh[i] += a[i] * dt;
-    ! for (int i = 0; i < 2*n; ++i) v[i] = vh[i] + a[i] * dt / 2;
-    ! for (int i = 0; i < 2*n; ++i) x[i] += vh[i] * dt;
-    !
+    do i = 1,2*state%nParticles
+      state%vh(i) = state%v(i) + state%a(i)*dt/2
+      state%v(i)  = state%v(i) + state%a(i)*dt
+      state%x(i)  = state%x(i) + state%vh(i)*dt
+    end do
+
+    ! state%vh = state%vh + (state%a  * dt)
+    ! state%v  = state%vh + (state%a  * dt/2)
+
     call reflect_bc(state)
 
     return
@@ -47,19 +40,17 @@ module integrate
     type (systemstate) :: state
     double precision   :: dt
 
-    state%vh = state%v + (state%a  * dt/2)
-    state%v  = state%v + (state%a  * dt)
-    state%x  = state%x + (state%vh * dt)
+    integer :: i
 
-    ! const float* a = s->a;
-    ! float*  vh = s->vh;
-    ! float*  v = s->v;
-    ! float*  x = s->x;
-    ! int n = s->n;
-    !
-    ! for (int i = 0; i < 2*n; ++i) vh[i] = v[i] + a[i] * dt/2;
-    ! for (int i = 0; i < 2*n; ++i) v[i] += a[i] * dt;
-    ! for (int i = 0; i < 2*n; ++i) x[i] += vh[i] * dt;
+    ! state%vh = state%v + (state%a  * dt/2)
+    ! state%v  = state%v + (state%a  * dt)
+    ! state%x  = state%x + (state%vh * dt)
+
+    do i = 1,2*state%nParticles
+      state%vh(i) = state%vh(i) + state%a(i)*dt
+      state%v(i)  = state%vh(i) + state%a(i)*dt/2
+      state%x(i)  = state%x(i)  + state%vh(i)*dt
+    end do
 
     call reflect_bc(state)
 
