@@ -92,9 +92,9 @@ contains
 
 
 
-  subroutine alloc_state(state,parameter)
+  subroutine alloc_state(state,params)
     type(systemstate) :: state !system state object
-    DOUBLE PRECISION, DIMENSION(9)  :: parameter
+    type(sim_parameter)											:: params
     double precision :: rho0
 
     ! allocate all arrays
@@ -108,8 +108,7 @@ contains
     state%v       = 0.d0
     state%vh      = 0.d0
     state%a       = 0.d0
-    rho0          = parameter(5)
-    state%rho     = rho0
+    state%rho     = params%rho0
     state%mass    = 1.0d0
 
   end subroutine
@@ -183,7 +182,19 @@ contains
   subroutine plot_data_from_file(sstate,i)
     type(systemstate)                           :: sstate
     integer                                     :: i
-      ! TODO: implement
+
+      character(len=100) :: file
+      character(len=5)   :: dummy
+      character(len=8)   :: fmt ! format descriptor
+
+
+      fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+      write (dummy,fmt) i ! converting integer to string using a 'internal file'
+      file = 'data/frame'//trim(dummy)//'.dat'
+
+      ! call plot(filename = file," 5.", pause=0.2, terminal=" x11 size 1200,1200", )
+
+
   end subroutine
 
 
@@ -194,11 +205,20 @@ contains
     integer                                     :: n,i
     double precision, allocatable, dimension(:) :: x,y
 
+    character(len=100) :: file
+    character(len=5)   :: dummy
+    character(len=8)   :: fmt ! format descriptor
+
     n = sstate%nParticles
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
 
-    call plot(x,y," 5.", pause=0.2, persist='no', terminal=" x11 size 1200,1200")
+    fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+    write (dummy,fmt) i ! converting integer to string using a 'internal file'
+    file='data/frame'//trim(dummy)//'.dat'
+
+    call plot(x,y," 5.", pause=0.2, persist = 'yes', terminal=" x11 size 1200,1200", filename = file)
+
   end subroutine
 
 

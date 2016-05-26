@@ -11,7 +11,7 @@ FCFLAGS += -I/usr/include
 # path to src files
 SOURCEPATH = src
 
-# libraries needed for linking, unused in the examples
+# libraries needed for linking
 #LDFLAGS = -li_need_this_lib
 
 # List of executables to be built within the package

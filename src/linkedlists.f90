@@ -19,7 +19,7 @@ contains
 
     use util
     type(systemstate)                                 :: sstate
-    double precision,dimension(9),intent(in)          :: params
+    type(sim_parameter)											:: params
     integer, allocatable, dimension(:)                :: ll ! should already be allocated when passed (in theory...)
     integer, allocatable, dimension(:,:)              :: lc ! should already be allocated when passed
 
@@ -30,7 +30,7 @@ contains
 
     ! print *, " in setup_neighbour_list"
     ntot = sstate%nParticles   ! total number of particles
-    rcut = params(9)             ! is 9th element in sim_param vector....
+    rcut = params%rcut             ! is 9th element in sim_param vector....
 
 
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
@@ -49,7 +49,7 @@ contains
       ! print *, nidx(1), nidx(2)
 
       ll(i) = lc(nidx(1),nidx(2))
-      
+
       lc(nidx(1),nidx(2)) = i
     end do
 
@@ -62,7 +62,7 @@ contains
 
     use util
     type(systemstate)              :: sstate
-    double precision,dimension(9)  :: params
+    type(sim_parameter)											:: params
     integer, dimension(:)          :: ll
     integer, dimension(:,:)        :: lc
 
@@ -73,7 +73,7 @@ contains
 
 
     ntot = sstate%nParticles   ! total number of particles
-    rcut = params(9)             ! is 9th element in sim_param vector....
+    rcut = params%rcut            ! is 9th element in sim_param vector....
 
 
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
@@ -102,11 +102,10 @@ contains
   end subroutine
 
 
-  subroutine init_ll(sstate, params, ll) ! implement as function or as subroutine?
+  subroutine init_ll(sstate, ll) ! implement as function or as subroutine?
 
     use util
     type(systemstate)                     :: sstate
-    double precision, dimension(9)        :: params
     integer, allocatable, dimension(:)    :: ll
     integer                               :: i
     integer                               :: ntot
@@ -126,7 +125,7 @@ contains
   subroutine init_lc(sstate, params, lc)
     use util
     type(systemstate)                        :: sstate
-    double precision, dimension(9)           :: params
+    type(sim_parameter)									  	 :: params
     integer, allocatable, dimension(:,:)     :: lc
     double precision                         :: rcut
     integer, dimension(2)                    :: nmax
@@ -134,7 +133,7 @@ contains
     integer                                  :: ntot
 
     ntot = sstate%nParticles
-    rcut = params(9) ! cutoff radius
+    rcut = params%rcut ! cutoff radius
 
 
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension

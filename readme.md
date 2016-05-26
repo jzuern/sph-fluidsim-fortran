@@ -17,11 +17,6 @@ SPECIFIC
 
 
 
-
-- make parametertype from param_vector (otherwise very hard to read)
-- separate src directory from .o / executable directory
-
-
 GENERAL
 - when to use interface?
 - when to use public/private in module?

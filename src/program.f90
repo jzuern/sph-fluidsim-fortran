@@ -39,39 +39,41 @@ double precision												:: dt 									! (constant) time step for numerical 
 
 ! Parse input parameter file
 call parse_input(simulation_parameter)
-dt = simulation_parameter(4)
+
+! Write contents of parameter array into sim_parameter type (handy usage)
+params = initialize_parameters(simulation_parameter)
 
 ! initialize particles
-call init_particles(sstate,simulation_parameter,ll,lc)
+call init_particles(sstate,params,ll,lc)
 
 ! initialize linked lists
-call init_ll(sstate,simulation_parameter,ll)
+call init_ll(sstate,ll)
 
 ! initialize linked cells lists
-call init_lc(sstate,simulation_parameter,lc)
+call init_lc(sstate,params,lc)
 
 ! setting up neighbor lists based on placed particles
-call setup_neighbour_list(sstate, simulation_parameter, ll,lc)
-call print_neighour_list(sstate, simulation_parameter, ll,lc)
+call setup_neighbour_list(sstate, params, ll,lc)
+call print_neighour_list(sstate, params, ll,lc)
 
 ! First integration
 print *, "Calculating Step ", 0
-call compute_accel(sstate, simulation_parameter, ll,lc)
-call leapfrog_start(sstate,dt)    ! for first iteration, we must use different leapfrog algorithm
+call compute_accel(sstate, params, ll,lc)
+call leapfrog_start(sstate,params%dt)    ! for first iteration, we must use different leapfrog algorithm
 																	! since we de not have any previous time step yet
 ! call check_state(sstate)   				! currently not working
 
 
 ! Simulation loop
-nFrames 						= simulation_parameter(1)
-nSteps_per_frame 		= simulation_parameter(2)
+nFrames 						= params%nFrames
+nSteps_per_frame 		= params%nSteps_per_frame
 
 do i = 1,nFrames
 	print *, "Calculating Step ", i, " of " , nFrames
 	do j = 1,nSteps_per_frame
 		! print *, "                    Calculating Sub-Step ", j
-		call compute_accel(sstate, simulation_parameter,ll,lc) !update values for accellerations
-		call leapfrog_step(sstate, dt) 												 !update velocities and positions based on previously calculated accelleration
+		call compute_accel(sstate, params,ll,lc) !update values for accellerations
+		call leapfrog_step(sstate, params%dt) 												 !update velocities and positions based on previously calculated accelleration
 		call check_state(sstate);  												 	   !not working
 	end do
 

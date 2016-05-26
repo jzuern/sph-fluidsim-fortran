@@ -21,7 +21,7 @@ contains
 
     use util
     type(systemstate)                           :: sstate !system state object
-    double precision, dimension(9)              :: params
+    type(sim_parameter)											:: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
 
@@ -61,7 +61,7 @@ contains
   subroutine normalize_mass(sstate,params)
     use util
     type (systemstate)                          :: sstate
-    DOUBLE PRECISION, DIMENSION(9)              :: params
+    type(sim_parameter)											:: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
     double precision                            :: rho0   ! reference density
@@ -71,7 +71,7 @@ contains
 
     rhos  = 0.d0
     rho2s = 0.d0
-    rho0 = params(5)
+    rho0 = params%rho0
 
     sstate%mass = 1.d0
 
@@ -91,7 +91,7 @@ contains
   subroutine compute_density_with_ll(sstate, params, ll, lc)
     use util
     type (systemstate)                          :: sstate
-    DOUBLE PRECISION, DIMENSION(9)              :: params
+    type(sim_parameter)											:: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
     integer, dimension(4)                       :: ndx,ndy
@@ -104,7 +104,7 @@ contains
 
     double precision :: dx,dy,r2,z, rho_ij
 
-    h = params(3)
+    h = params%h
     h2 = h*h
     h8 = h2*h2*h2*h2
 
@@ -118,7 +118,7 @@ contains
     ndx = (/1,1,0,-1 /)
     ndy = (/0,1,1, 1 /)
 
-    rcut = params(9)             ! is 9th element in sim_param vector....
+    rcut = params%rcut            ! is 9th element in sim_param vector....
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     ! print *, "test"
@@ -189,7 +189,7 @@ contains
   subroutine compute_density_without_ll(sstate, params)
     use util
     type (systemstate)                          :: sstate
-    DOUBLE PRECISION, DIMENSION(9)              :: params
+    type(sim_parameter)											:: params
     integer, dimension(4)                       :: ndx,ndy
     integer, dimension(2)                       :: nmax
 
@@ -199,7 +199,7 @@ contains
 
     double precision :: dx,dy,r2,z, rho_ij
 
-    h = params(3)
+    h = params%h
     h2 = h*h
     h8 = h2*h2*h2*h2
 
@@ -212,7 +212,7 @@ contains
     ndx = (/1,1,0,-1 /)
     ndy = (/0,1,1, 1 /)
 
-    rcut = params(9)             ! is 9th element in sim_param vector....
+    rcut = params%rcut          ! is 9th element in sim_param vector....
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     ! print *, "test"
@@ -242,12 +242,12 @@ contains
 
     use util
     type (systemstate)                    :: sstate
-    DOUBLE PRECISION, DIMENSION(9)        :: params
+    type(sim_parameter)											:: params
     double precision                      :: h,hh
     integer                               :: count, p
     double precision                      :: x,y, rd
 
-    h = params(3) ! size of particles
+    h = params%h ! size of particles
     hh = h/1.0d0  ! why not > 1.0?
 
 
@@ -382,7 +382,7 @@ contains
     use linkedlists
 
     type (systemstate)                    :: sstate
-    DOUBLE PRECISION, DIMENSION(9)        :: params
+    type(sim_parameter)											:: params
     integer, allocatable, dimension(:)    :: ll
     integer, allocatable, dimension(:,:)  :: lc
     integer                               :: n  !number of particles
@@ -397,15 +397,15 @@ contains
     double precision                      :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
 
     n         = sstate%nParticles
-    h         = params(3)
-    rho0      = params(5)
-    k         = params(6)
-    mu        = params(7)
-    g         = params(8)
+    h         = params%h
+    rho0      = params%rho0
+    k         = params%k
+    mu        = params%mu
+    g         = params%g
     mass      = sstate%mass
     h2        = h*h
 
-    rcut    = params(9)          ! is 9th element in sim_param vector....
+    rcut    = params%rcut         ! is 9th element in sim_param vector....
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
