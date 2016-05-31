@@ -1,5 +1,5 @@
 set terminal  x11 size 1200,1200
-set output "data/frame00050.dat"
+set output "data/frame00008.dat"
 unset key
 set xrange [0:1]
 set yrange [0:1]
