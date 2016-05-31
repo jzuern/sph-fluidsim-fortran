@@ -1,22 +1,27 @@
 Fortran 2D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH).
 Linked Lists
 
-Visualization:			 Gnuplot with Fortran interface ( http://www.math.yorku.ca/~akuznets/gnufor2/ )
+Visualization:			 
+Gnuplot with Fortran interface ( http://www.math.yorku.ca/~akuznets/gnufor2/ )
 				 Edited the source file gnufor2.f90 in order to modify the Gnuplot visualizations
-Simulation parameters:    	 Command line argument to setup file setup.dat
+Simulation parameters:    	 
+Command line argument to setup file setup.dat
 
 
 // BUILD
 
 build the program with the provided MAKEFILE using
+
 $ make
+
 
 No external library dependencies
 
 // USAGE
 
-start the executable nnet with a simulation parameter file as the command line argument
-$ ./nnet sim_parameter.dat
+start the executable "program" with a simulation parameter file as the command line argument
+
+$ ./program sim_parameter.dat
 
 // EXPLANATION
 
@@ -26,10 +31,15 @@ This 2D SPH fluid simulation is loosely based on an introductary paper on this m
 The code inside the source files is structured in a way as to reflect their role in the simulation.
 
 -> gnufor2.f90: interface to call for Gnuplot instance inside FORTRAN program (credit to http://www.math.yorku.ca/~akuznets/gnufor2/)
+
 -> integrate.f90: implementation of numerical integration technique
+
 -> linkedlist.f90: implementation of linked list bookkeeping routines
+
 -> sphfunctions:f90: implementation of particle interaction routines
+
 -> util.f90: auxiliary functions with no other suitable place
+
 -> program.f90: main program which starts simulation
 
 
