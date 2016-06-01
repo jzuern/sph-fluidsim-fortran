@@ -4,7 +4,7 @@ module linkedlists
   ! Implementation of functions and subroutines for linked lists bookkeeping
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/24/2016
+  !Last modified: 06/01/2016
 
 
 implicit none
@@ -19,9 +19,9 @@ contains
 
     use util
     type(systemstate)                                 :: sstate
-    type(sim_parameter)											:: params
-    integer, allocatable, dimension(:)                :: ll ! should already be allocated when passed (in theory...)
-    integer, allocatable, dimension(:,:)              :: lc ! should already be allocated when passed
+    type(sim_parameter)											          :: params
+    integer, allocatable, dimension(:)                :: ll
+    integer, allocatable, dimension(:,:)              :: lc
 
     integer               :: i
     integer               :: ntot
@@ -46,8 +46,6 @@ contains
       nidx(2) = min(nidx(2),nmax(2))
       nidx(2) = max(nidx(2),1)
 
-      ! print *, nidx(1), nidx(2)
-
       ll(i) = lc(nidx(1),nidx(2))
 
       lc(nidx(1),nidx(2)) = i
@@ -62,7 +60,7 @@ contains
 
     use util
     type(systemstate)              :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)						 :: params
     integer, dimension(:)          :: ll
     integer, dimension(:,:)        :: lc
 
@@ -76,22 +74,19 @@ contains
     rcut = params%rcut            ! is 9th element in sim_param vector....
 
 
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
 
     do i = 1, nmax(1)
-
       do j = 1,nmax(2)
-
         if (lc(i,j) /= -1) THEN
           n = lc(i,j)
           print *, "cell ", i,j, ": "
-
           do while ( n /= -1)
              print*, "particle ", n , ",coordinates: " , sstate%x(2*n-1) , " " , sstate%x(2*n-0)
             n = ll(n)
           end do
-          print *, ! new line
+          print *,
         else
           ! print *, " No particles in cell " , i , " " , j
         end if
@@ -114,10 +109,7 @@ contains
     ntot  = sstate%nParticles
     allocate(ll(ntot))
 
-    do i = 1,ntot
-        ll(i) = -1
-    end do
-
+    ll = -1 ! initialize ll with -1 (empty cell)
 
   end subroutine
 
@@ -136,17 +128,11 @@ contains
     rcut = params%rcut ! cutoff radius
 
 
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
 
     allocate(lc(nmax(1),nmax(2)))
-
-
-    do i = 1,nmax(1)
-      do j = 1,nmax(2)
-        lc(i,j) = -1      ! initialize lc with -1 (empty cell)
-      end do
-    end do
+    lc = -1 ! initialize lc with -1 (empty cell)
 
 
   end subroutine

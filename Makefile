@@ -34,17 +34,6 @@ program:    gnufor2.o \
 						sphfunctions.o \
 						integrate.o
 
-# program.o:  $(SOURCEPATH)/gnufor2.o \
-# 						$(SOURCEPATH)/util.o \
-# 						$(SOURCEPATH)/linkedlists.o \
-# 						$(SOURCEPATH)/sphfunctions.o  \
-# 						$(SOURCEPATH)/integrate.o
-#
-# program:    $(SOURCEPATH)/gnufor2.o \
-# 						$(SOURCEPATH)/util.o \
-# 						$(SOURCEPATH)/linkedlists.o \
-# 						$(SOURCEPATH)/sphfunctions.o \
-# 						$(SOURCEPATH)/integrate.o
 
 # General rule for building prog from prog.o; $^ (GNU extension) is
 # used in order to list additional object files on which the

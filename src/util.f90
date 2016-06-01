@@ -83,7 +83,7 @@ contains
     r2 = dx*dx + dy*dy
     res = 0
 
-    tmp = (r2 > 0.0d0*0.0d0) .AND. (r2 < 0.3d0*0.3d0)
+    tmp = (r2 > 0.1d0*0.1d0) .AND. (r2 < 0.5d0*0.5d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -158,7 +158,7 @@ contains
   subroutine write_data_to_file(sstate,i)
 
     type(systemstate)                           :: sstate
-    integer                                     :: n,i
+    integer                                     :: n,i,k
     double precision, allocatable, dimension(:) :: x,y
     character(len=100) :: filename
     character(len=5)   :: dummy
@@ -174,26 +174,51 @@ contains
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
 
-    write (10,*) x, y
+    do k = 1,n
+      write (10,*) x(k),y(k)
+    end do
+
+
     close(10)
   end subroutine
 
 
   subroutine plot_data_from_file(sstate,i)
+    use gnufor2
     type(systemstate)                           :: sstate
     integer                                     :: i
 
-      character(len=100) :: file
+      character(len=100) :: datafile
+      character(len=100) :: commandfile
       character(len=5)   :: dummy
       character(len=8)   :: fmt ! format descriptor
+      character(len=100) :: line1,line2
 
 
       fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
       write (dummy,fmt) i ! converting integer to string using a 'internal file'
-      file = 'data/frame'//trim(dummy)//'.dat'
+      datafile = "dataframe" // trim(dummy) // ".dat"
 
-      ! call plot(filename = file," 5.", pause=0.2, terminal=" x11 size 1200,1200", )
 
+      !writing command file (here we specify the command file, from where gnuplot will
+      !                      get all the info about plotting specifications)
+      commandfile = "command_file.txt"
+
+      open (unit=11, file=commandfile, status="replace")
+      write ( 11,*) "set terminal  x11 size 600,600"
+      line1 = "set output '" // datafile // "'" !TODO: find out why linebreak in string
+      write ( 11,*) line1
+      write ( 11,*) "unset key"
+      write ( 11,*) "set xrange [0:1]"
+      write ( 11,*) "set yrange [0:1]"
+      write ( 11,*) "set grid"
+      line2 = 'plot "' // commandfile // '" using 1:2 with points pointtype  4 linecolor rgb "blue" linewidth 1'
+      write ( 11,*) line2 !TODO: find out why linebreak in string
+      write ( 11,*) "pause 0.100E+00"
+      write ( 11,*) "q"
+
+      !calling gnuplot
+      call run_gnuplot (commandfile)
 
   end subroutine
 
@@ -217,7 +242,7 @@ contains
     write (dummy,fmt) i ! converting integer to string using a 'internal file'
     file='data/frame'//trim(dummy)//'.dat'
 
-    call plot(x,y," 5.", pause=0.2, persist = 'yes', terminal=" x11 size 1200,1200", filename = file)
+    call plot(x,y," 4.",pause=0.1, persist = "yes", terminal=" x11 size 600,600", filename = file)
 
   end subroutine
 

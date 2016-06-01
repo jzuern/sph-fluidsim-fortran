@@ -12,7 +12,7 @@ implicit none
 private
 
 public :: reflect_bc, damp_reflect, compute_density_with_ll, compute_density_without_ll, &
- compute_accel,check_state, init_particles
+ compute_accel, init_particles
 
 contains
 
@@ -21,39 +21,14 @@ contains
 
     use util
     type(systemstate)                           :: sstate !system state object
-    type(sim_parameter)											:: params
+    type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
 
     call place_particles(sstate,params)
-
-
     call normalize_mass(sstate,params)
 
-
   end subroutine
-
-
-
-  subroutine check_state(sstate)
-    use util
-    type(systemstate) :: sstate !system state object
-
-    integer :: i
-    double precision :: xi, yi
-
-    do i = 1,sstate%nParticles
-      xi = sstate%x(2*i - 1)
-      yi = sstate%x(2*i - 0)
-      ! assert statements unavailable in F90
-      !         assert( xi >= 0 || xi <= 1 );
-      !         assert( yi >= 0 || yi <= 1 );
-    end do
-
-
-
-  end subroutine
-
 
 
 
@@ -61,27 +36,22 @@ contains
   subroutine normalize_mass(sstate,params)
     use util
     type (systemstate)                          :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
     double precision                            :: rho0   ! reference density
     double precision                            :: rho2s,rhos
     integer                                     :: i
 
-
-    rhos  = 0.d0
-    rho2s = 0.d0
     rho0 = params%rho0
-
-    sstate%mass = 1.d0
 
     call compute_density_without_ll(sstate,params)
 
-    do i = 1,sstate%nParticles
-      rho2s = rho2s + sstate%rho(i)*sstate%rho(i)
-      rhos  = rhos + sstate%rho(i)
-    end do
+    rhos  = SUM(sstate%rho)
+    rho2s = SUM(sstate%rho * sstate%rho);
 
+
+    sstate%mass = 1.d0
     sstate%mass = sstate%mass * (rho0*rhos / rho2s)
 
   end subroutine
@@ -91,7 +61,7 @@ contains
   subroutine compute_density_with_ll(sstate, params, ll, lc)
     use util
     type (systemstate)                          :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
     integer, dimension(4)                       :: ndx,ndy
@@ -119,8 +89,8 @@ contains
     ndy = (/0,1,1, 1 /)
 
     rcut = params%rcut            ! is 9th element in sim_param vector....
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
     ! print *, "test"
 
     do i = 1,nmax(1)
@@ -189,7 +159,7 @@ contains
   subroutine compute_density_without_ll(sstate, params)
     use util
     type (systemstate)                          :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)											    :: params
     integer, dimension(4)                       :: ndx,ndy
     integer, dimension(2)                       :: nmax
 
@@ -209,13 +179,12 @@ contains
 
     C = 4*mass / Pi / h8;
 
-    ndx = (/1,1,0,-1 /)
-    ndy = (/0,1,1, 1 /)
+    ndx = (/1,1,0,-1 /) ! index offsets of neighboring cells in x direction
+    ndy = (/0,1,1, 1 /) ! index offsets of neighboring cells in y direction
 
-    rcut = params%rcut          ! is 9th element in sim_param vector....
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    ! print *, "test"
+    rcut = params%rcut
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
 
     do i = 1,n
       sstate%rho(i) = sstate%rho(i) + 4*mass/Pi/h2
@@ -248,7 +217,7 @@ contains
     double precision                      :: x,y, rd
 
     h = params%h ! size of particles
-    hh = h/1.0d0  ! why not > 1.0?
+    hh = h/1.0d0 ! scaling
 
 
     count = 0
@@ -277,9 +246,8 @@ contains
       do while (y < 1.d0)
 
         if (circ_indicator(x,y) /= 0) THEN
-          ! CALL init_random_seed()         ! TODO: do I need initialization of random seed?
-          CALL RANDOM_NUMBER(rd)            ! random number between 0 and 1
-          rd = rd * 0.001d0              ! TODO: what is correct size for this?
+          CALL RANDOM_NUMBER(rd)   ! random number between 0 and 1
+          rd = rd * 0.0001d0
           sstate%x(2*p-1) = x + rd
           sstate%x(2*p-0) = y + rd
           sstate%v(2*p-1) = 0.d0
@@ -302,32 +270,37 @@ contains
     double precision    :: barrier
     double precision    :: damp, tbounce
 
-    !ignore degenerate cases
-    if (sstate%v(i+which) == 0.d0) then
+    ! ignore degenerate cases
+    if (sstate%v(i-1+which) == 0.d0) then
       return
     end if
+
+    ! print *, "Particle pre-collision: "
+    ! print *,  sstate%v
 
 
     !Coefficient of resitiution
     damp = 0.75d0
 
     !scale back the distance traveled based on time from collision
-    tbounce = (sstate%x(i+which)-barrier) / sstate%v(i+which)
+    tbounce = (sstate%x(i-1+which) - barrier) / sstate%v(i-1+which)
 
-    sstate%x(i+0) = sstate%x(i+0) - sstate%v(i+0) * (1-damp)*tbounce
-    sstate%x(i+1) = sstate%x(i+1) - sstate%v(i+1) * (1-damp)*tbounce
+    sstate%x(i-1) = sstate%x(i-1) - sstate%v(i-1) * (1-damp)*tbounce
+    sstate%x(i  ) = sstate%x(i  ) - sstate%v(i  ) * (1-damp)*tbounce
 
     ! reflect position and velocity
-    sstate%x( i+which) = 2*barrier -sstate%x(i+which)
-    sstate%v( i+which) =           -sstate%v(i+which)
-    sstate%vh(i+which) =           -sstate%vh(i+which)
-
+    sstate%x( i-1+which) = 2*barrier -sstate%x (i-1+which)
+    sstate%v( i-1+which) =           -sstate%v( i-1+which)
+    sstate%vh(i-1+which) =           -sstate%vh(i-1+which)
 
     ! damp velocities
-    sstate%v(i+0)  = sstate%v(i+0)* damp
-    sstate%vh(i+0) = sstate%vh(i+0)* damp
-    sstate%v(i+1)  = sstate%v(i+1)* damp
-    sstate%vh(i+1)  = sstate%vh(i+1)* damp
+    sstate%v (i-1)  = sstate%v (i-1)* damp
+    sstate%vh(i-1)  = sstate%vh(i-1)* damp
+    sstate%v( i  )  = sstate%v (i  )* damp
+    sstate%vh(i  )  = sstate%vh(i  )* damp
+
+
+
 
 
   end subroutine
@@ -348,29 +321,39 @@ contains
 
       n = sstate%nParticles
 
-      do i = 1,2*n,2 ! correct
 
-        if (sstate%x(i) < xmin) then
+      ! print *, "Particle pre-collision: "
+      ! print *,  sstate%v
+
+
+
+      do i = 1,n ! correct
+
+        if (sstate%x(2*i - 1) < xmin) then
           ! print *, "particle at left wall"
-          call damp_reflect(i,0,xmin,sstate)
+          call damp_reflect(2*i,0,xmin,sstate)
         end if
 
-        if (sstate%x(i) > xmax) then
+        if (sstate%x(2*i - 1) > xmax) then
           ! print *, "particle at right wall"
-          call damp_reflect(i,0,xmax,sstate)
+          call damp_reflect(2*i,0,xmax,sstate)
         end if
 
-        if (sstate%x(i+1) < ymin) then
+        if (sstate%x(2*i) < ymin) then
           ! print *, "particle at bottom"
-          call damp_reflect(i,1,ymin,sstate)
+          call damp_reflect(2*i,1,ymin,sstate)
         end if
 
-        if (sstate%x(i+1) > ymax) then
+        if (sstate%x(2*i) > ymax) then
           ! print *, "particle at top"
-          call damp_reflect(i,1,ymax,sstate)
+          call damp_reflect(2*i,1,ymax,sstate)
         end if
 
       end do
+
+
+      ! print *, "Particle post-collision: "
+      ! print *,  sstate%v
 
     end subroutine
 
@@ -382,17 +365,16 @@ contains
     use linkedlists
 
     type (systemstate)                    :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)										:: params
     integer, allocatable, dimension(:)    :: ll
     integer, allocatable, dimension(:,:)  :: lc
     integer                               :: n  !number of particles
     integer,dimension(2)                  :: nmax
     integer                               :: i,j,no
-    integer, dimension(4)                 :: ndx,ndy
+    integer,dimension(4)                  :: ndx,ndy
     integer                               :: n1,n2,nx,ny
     double PRECISION                      :: h,rho0,k,mu,g,mass,h2,rcut
     double PRECISION                      :: c0,cp,cv
-    integer                               :: ncalcs  ! number of performed calculations (for performance testing)
     double PRECISION                      :: dx,dy,r2
     double precision                      :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
 
@@ -406,35 +388,22 @@ contains
     h2        = h*h
 
     rcut    = params%rcut         ! is 9th element in sim_param vector....
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
+    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
 
     !clearing ll and lc
-    do i = 1,nmax(1)
-      do j = 1,nmax(2)
-        lc(i,j) = -1
-      end do
-    end do
-    do i = 1,n
-      ll(i) = -1
-    end do
+    lc = -1
+    ll = -1
 
+    ! apply gravitational forces (=acceleration)
+    sstate%a = 0.0d0
+    sstate%a(2:2*n:2) = -g ! only apply to y-component of acceleration vector
 
-    ! start with gravity forces
-    do i = 1,n
-      sstate%a(2*i-1) = 0.d0
-      sstate%a(2*i-0) = -g
-    end do
 
     ! constants for interaction term
     c0 = mass/pi/(h2*h2)
     cp = 15.d0*k
     cv = -40.d0*mu
-
-    nCalcs = 0
-
-
-
 
     ! update neighbor list and density distribution
     call setup_neighbour_list(sstate,params,ll,lc)
@@ -456,7 +425,6 @@ contains
             rhoi = sstate%rho(n1)
             do while(n2 /= -1)
 
-              nCalcs = nCalcs + 1
               dx = sstate%x(2*n2-1) - sstate%x(2*n1-1);
               dy = sstate%x(2*n2-0) - sstate%x(2*n1-0);
               r2 = dx*dx + dy*dy
@@ -495,7 +463,7 @@ contains
               n2 = lc(nx,ny)
 
               do  while( n2 /= -1)
-                nCalcs = nCalcs + 1
+
                 dx = sstate%x(2*n2-1)-sstate%x(2*n1-1)
                 dy = sstate%x(2*n2-0)-sstate%x(2*n1-0)
                 r2 = dx*dx + dy*dy

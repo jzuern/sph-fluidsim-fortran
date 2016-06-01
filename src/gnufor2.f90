@@ -640,7 +640,7 @@
 !***********************************************************************************
 ! here we write the commands to the commands file which gnuplot will execute
 !***********************************************************************************
-	my_persist='persist'
+	my_persist='persist '
 	if (present(persist).and.(persist=='no')) my_persist=' '
 	if (present(terminal)) then
 		write ( file_unit, '(a)' ) 'set terminal '// trim(output_terminal(terminal))
@@ -770,7 +770,7 @@
 !***********************************************************************************
 ! here we write the commands to the commands file which gnuplot will execute
 !***********************************************************************************
-	my_persist='persist'
+	my_persist='persist '
 	if (present(persist).and.(persist=='no')) my_persist=' '
 	if (present(terminal)) then
 		write ( file_unit, '(a)' ) 'set terminal '// trim(output_terminal(terminal))

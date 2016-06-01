@@ -42,10 +42,6 @@ module integrate
 
     integer :: i
 
-    ! state%vh = state%v + (state%a  * dt/2)
-    ! state%v  = state%v + (state%a  * dt)
-    ! state%x  = state%x + (state%vh * dt)
-
     do i = 1,2*state%nParticles
       state%vh(i) = state%vh(i) + state%a(i)*dt
       state%v(i)  = state%vh(i) + state%a(i)*dt/2
