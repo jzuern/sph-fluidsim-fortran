@@ -12,21 +12,23 @@ module integrate
   contains
 
   subroutine leapfrog_start(state, dt)
+
     use util
-    use sphfunctions   ! in order to call reflect_bc
-    type(systemstate) :: state
-    double precision  :: dt
-    integer :: i
+    use sphfunctions
+
+    type(systemstate)            :: state
+    double precision,intent(in)  :: dt
 
 
-    do i = 1,2*state%nParticles
-      state%vh(i) = state%v(i) + state%a(i)*dt/2
-      state%v(i)  = state%v(i) + state%a(i)*dt
-      state%x(i)  = state%x(i) + state%vh(i)*dt
-    end do
+    ! do i = 1,2*state%nParticles
+    !   state%vh(i) = state%v(i) + state%a(i)*dt/2
+    !   state%v(i)  = state%v(i) + state%a(i)*dt
+    !   state%x(i)  = state%x(i) + state%vh(i)*dt
+    ! end do
 
-    ! state%vh = state%vh + (state%a  * dt)
-    ! state%v  = state%vh + (state%a  * dt/2)
+    state%vh = state%v  + (state%a   * dt/2)
+    state%v  = state%v  + (state%a   * dt  )
+    state%x  = state%x  + (state%vh  * dt  )
 
     call reflect_bc(state)
 
@@ -41,12 +43,17 @@ module integrate
     double precision   :: dt
 
     integer :: i
+    !
+    ! do i = 1,2*state%nParticles
+    !   state%vh(i) = state%vh(i) + state%a(i)*dt
+    !   state%v(i)  = state%vh(i) + state%a(i)*dt/2
+    !   state%x(i)  = state%x(i)  + state%vh(i)*dt
+    ! end do
 
-    do i = 1,2*state%nParticles
-      state%vh(i) = state%vh(i) + state%a(i)*dt
-      state%v(i)  = state%vh(i) + state%a(i)*dt/2
-      state%x(i)  = state%x(i)  + state%vh(i)*dt
-    end do
+    state%vh = state%vh + state%a*dt
+    state%v  = state%vh + state%a*dt/2
+    state%x  = state%x  + state%vh*dt
+
 
     call reflect_bc(state)
 

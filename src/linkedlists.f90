@@ -6,11 +6,7 @@ module linkedlists
   !Created by Jannik Zuern on 05/16/2016
   !Last modified: 06/01/2016
 
-
-implicit none
-
-private
-public :: setup_neighbour_list , print_neighour_list , init_lc , init_ll
+  implicit none
 
 contains
 
@@ -28,15 +24,13 @@ contains
     double precision      :: rcut
     integer, dimension(2) :: nmax, nidx
 
-    ! print *, " in setup_neighbour_list"
     ntot = sstate%nParticles   ! total number of particles
-    rcut = params%rcut             ! is 9th element in sim_param vector....
+    rcut = params%rcut
 
 
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
-    ! print *, ntot, rcut, nmax(1), nmax(2)
     do i = 1,ntot
       nidx(1) = int(floor((sstate%x(2*i-1))/rcut)); !x coordinate
       nidx(1) = min(nidx(1),nmax(1))
@@ -56,6 +50,7 @@ contains
 
 
   subroutine print_neighour_list(sstate, params, ll,lc)
+
     ! print neighbor list for debugging purposes
 
     use util
@@ -71,7 +66,7 @@ contains
 
 
     ntot = sstate%nParticles   ! total number of particles
-    rcut = params%rcut            ! is 9th element in sim_param vector....
+    rcut = params%rcut
 
 
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
@@ -97,7 +92,7 @@ contains
   end subroutine
 
 
-  subroutine init_ll(sstate, ll) ! implement as function or as subroutine?
+  subroutine init_ll(sstate, ll)
 
     use util
     type(systemstate)                     :: sstate

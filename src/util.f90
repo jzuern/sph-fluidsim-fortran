@@ -7,11 +7,11 @@ module util
 
 
 implicit none
-
-
-private
-public :: systemstate, sim_parameter, alloc_state, parse_input, circ_indicator, box_indicator , &
-free_state , plot_data_immediately, plot_data_from_file,write_data_to_file , initialize_parameters, Pi
+!
+!
+! private
+! public :: systemstate, sim_parameter, alloc_state, parse_input, circ_indicator, box_indicator , &
+! free_state , plot_data_immediately, plot_data_from_file,write_data_to_file , initialize_parameters, Pi
 
   double precision, PARAMETER :: Pi = 3.1415927d0
 
@@ -56,14 +56,17 @@ contains
 
 
   function box_indicator (x,y) result(res)
+
+    !indicates whether point (x,y) lies within rectangular box (res == 1) or not (res == 0)
+
     implicit none
-    double precision                :: x,y
+
+    double precision,intent(in)                :: x,y
     logical                         :: tmp
     integer                         :: res
 
     res = 0
-    ! print *, x , y
-    tmp = (x > 0.3d0) .AND. (y > 0.0d0) .AND. (x < 0.0d0) .AND. (y < 0.7d0)
+    tmp = (x < 0.3d0) .AND. (y > 0.0d0) .AND. (x > 0.0d0) .AND. (y < 0.7d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -72,18 +75,22 @@ contains
 
 
   function circ_indicator (x,y) result(res)
+
+    !indicates whether point (x,y) lies within circle (res == 1) or not (res == 0)
+
     implicit none
+
     double precision, intent(in)    :: x,y
     logical                         :: tmp
     integer                         :: res
     double precision                :: dx,dy,r2
 
-    dx = x-0.2d0
-    dy = y-0.2d0
+    dx = x-0.5d0
+    dy = y-0.5d0
     r2 = dx*dx + dy*dy
     res = 0
 
-    tmp = (r2 > 0.1d0*0.1d0) .AND. (r2 < 0.5d0*0.5d0)
+    tmp = (r2 > 0.2d0*0.2d0) .AND. (r2 < 0.6d0*0.6d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -91,11 +98,13 @@ contains
   end function
 
 
-
   subroutine alloc_state(state,params)
-    type(systemstate) :: state !system state object
-    type(sim_parameter)											:: params
-    double precision :: rho0
+
+    ! allocates memory for system state variables
+
+    type(systemstate)                       :: state !system state object
+    type(sim_parameter)											:: params!simulation parameter object
+    double precision                        :: rho0
 
     ! allocate all arrays
     allocate(state%x   (2*state%nParticles))
@@ -115,6 +124,9 @@ contains
 
 
   subroutine free_state(state)
+
+    ! deallocates variables and frees memory
+
     type(systemstate) :: state !system state object
 
     ! deallocate all arrays
@@ -157,7 +169,9 @@ contains
 
   subroutine write_data_to_file(sstate,i)
 
-    type(systemstate)                           :: sstate
+    ! writes plotting data for each frame to files
+
+    type(systemstate),intent(in)                :: sstate
     integer                                     :: n,i,k
     double precision, allocatable, dimension(:) :: x,y
     character(len=100) :: filename
@@ -184,9 +198,13 @@ contains
 
 
   subroutine plot_data_from_file(sstate,i)
-    use gnufor2
-    type(systemstate)                           :: sstate
-    integer                                     :: i
+
+      ! plots data from files
+      ! TODO: debugging
+
+      use gnufor2
+      type(systemstate),intent(in)                :: sstate
+      integer                                     :: i
 
       character(len=100) :: datafile
       character(len=100) :: commandfile
@@ -224,9 +242,11 @@ contains
 
 
   subroutine plot_data_immediately(sstate,i)
+
+    ! plots data without saving to file by using gnufor2 library for plotting
     use gnufor2
 
-    type(systemstate)                           :: sstate
+    type(systemstate),intent(in)                :: sstate
     integer                                     :: n,i
     double precision, allocatable, dimension(:) :: x,y
 
@@ -240,15 +260,19 @@ contains
 
     fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
     write (dummy,fmt) i ! converting integer to string using a 'internal file'
-    file='data/frame'//trim(dummy)//'.dat'
+    file='data/frame'//trim(dummy)//'.dat' !concatenating stuff to create file name
 
-    call plot(x,y," 4.",pause=0.1, persist = "yes", terminal=" x11 size 600,600", filename = file)
+    ! actual plotting command:
+    call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 600,600", filename = file)
 
   end subroutine
 
 
 
   function initialize_parameters (params) result(param_type)
+
+    ! writes entries of parameter vector into param_type object
+
     implicit none
     DOUBLE PRECISION, DIMENSION(9)             :: params
     type(sim_parameter)                        :: param_type
@@ -263,12 +287,6 @@ contains
     param_type%g                 = params(8)
     param_type%rcut              = params(9)
 
-
   end function
-
-
-
-
-
 
 end module util

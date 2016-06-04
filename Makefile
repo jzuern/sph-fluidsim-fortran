@@ -1,21 +1,19 @@
 # The compiler
-FC = gfortran
+FC = f95
 
 # flags for debugging or for maximum performance, comment as necessary
 FCFLAGS = -g -fbounds-check
 # FCFLAGS = -O2
 
 # flags forall (e.g. look for system .mod files, required in gfortran)
-# FCFLAGS += -I/usr/include
+# FCFLAGS += -I/usr/lib
 
 # path to src files
 SOURCEPATH = src
 
-# path to binaries
-BINPATH = bin
 
 # libraries needed for linking
-#LDFLAGS = -li_need_this_lib
+# LDFLAGS =-lfortranposix -lgnuplotfortran
 
 # List of executables to be built within the package
 PROGRAMS = program
@@ -39,13 +37,15 @@ program:    gnufor2.o \
 # used in order to list additional object files on which the
 # executable depends
 %: %.o
-	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
+	$(FC) $(FCFLAGS) -o $@ $^ #original
+	# $(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS) #not original
 
 # General rules for building prog.o from prog.f90 or prog.F90; $< is
 # used in order to list only the first prerequisite (the source file)
 # and not the additional prerequisites such as module or include files
 %.o: $(SOURCEPATH)/%.f90
-	$(FC) $(FCFLAGS) -c $<
+	$(FC) $(FCFLAGS) -c $< #original
+	# $(FC) $(FCFLAGS) -c $< $(LDFLAGS) #not original
 
 # Utility targets
 .PHONY: clean veryclean

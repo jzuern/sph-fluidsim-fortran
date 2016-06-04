@@ -4,13 +4,21 @@ Visualization:
 Gnuplot with Fortran interface ( http://www.math.yorku.ca/~akuznets/gnufor2/ ) Edited the source file gnufor2.f90 in order to modify the Gnuplot visualizations Simulation parameters:
 Command line argument to setup file setup.dat
 
+Improvement: used gnuplotfortran (http://gnuplotfortran.sourceforge.net/) for better plot handling (dynamically initialize and destroy a gnuplot session for continuous plotting)
+(relies on fortranposix library as well.
+
 // BUILD
+
 
 build the program with the provided MAKEFILE using
 
 $ make
 
-No external library dependencies
+libraries we need to link against are:
+- gnuplotfortran
+- fortranposix
+
+That is accounted for in the makefile
 
 // USAGE
 
@@ -40,15 +48,12 @@ The code inside the source files is structured in a way as to reflect their role
 
 Debug:
 
-cloud exploding when touching ground/when packed too much together. Spring forces too strong?!
+Make linking to lfortranposix, lgnuplotfortran work
 
-possible explanations: variable not defined (= 0)
 when program finishes: error in `./program': free(): invalid next size (normal): 0x00000000010f1e50
 
 GENERAL
 
 when to use interface?
-when to use public/private in module?
 when to use intent(in), intent(out), intent(inout) ?
 when to use integer, PARAMETER :: xyz
-more usage of handy FORTRAN array wizardry?

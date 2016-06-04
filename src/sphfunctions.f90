@@ -8,12 +8,6 @@ module sphfunctions
 
 implicit none
 
-
-private
-
-public :: reflect_bc, damp_reflect, compute_density_with_ll, compute_density_without_ll, &
- compute_accel, init_particles
-
 contains
 
 
@@ -34,12 +28,14 @@ contains
 
 
   subroutine normalize_mass(sstate,params)
+
     use util
+
     type (systemstate)                          :: sstate
     type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
-    double precision                            :: rho0   ! reference density
+    double precision                            :: rho0
     double precision                            :: rho2s,rhos
     integer                                     :: i
 
@@ -109,7 +105,7 @@ contains
               r2 = dx*dx + dy*dy
               z  = h2 - r2
 
-              if (z > 0.d0) then
+              if (z > 0.0d0) then
                 rho_ij = C*z*z*z
                 sstate%rho(n1) = sstate%rho(n1) + rho_ij
                 sstate%rho(n2) = sstate%rho(n2) + rho_ij
@@ -227,7 +223,7 @@ contains
     do while (x < 1.d0)
       y = 0.d0
       do while (y < 1.d0)
-        count = count + circ_indicator(x,y)
+        count = count + box_indicator(x,y)
         y = y + hh
       end do
       x = x + hh
@@ -245,9 +241,12 @@ contains
       y = 0.d0
       do while (y < 1.d0)
 
-        if (circ_indicator(x,y) /= 0) THEN
+        if (box_indicator(x,y) /= 0) THEN
           CALL RANDOM_NUMBER(rd)   ! random number between 0 and 1
-          rd = rd * 0.0001d0
+          rd = rd * 0.0001d0 !scale number down
+
+          ! add some random noise to particle positions in order to prevent any
+          ! symmetries to be preserved
           sstate%x(2*p-1) = x + rd
           sstate%x(2*p-0) = y + rd
           sstate%v(2*p-1) = 0.d0
@@ -275,12 +274,9 @@ contains
       return
     end if
 
-    ! print *, "Particle pre-collision: "
-    ! print *,  sstate%v
-
-
     !Coefficient of resitiution
-    damp = 0.75d0
+    ! damp = 0.75d0
+    damp = 0.5d0
 
     !scale back the distance traveled based on time from collision
     tbounce = (sstate%x(i-1+which) - barrier) / sstate%v(i-1+which)
@@ -300,9 +296,6 @@ contains
     sstate%vh(i  )  = sstate%vh(i  )* damp
 
 
-
-
-
   end subroutine
 
 
@@ -320,12 +313,6 @@ contains
       double precision :: ymax = 1.0d0
 
       n = sstate%nParticles
-
-
-      ! print *, "Particle pre-collision: "
-      ! print *,  sstate%v
-
-
 
       do i = 1,n ! correct
 
@@ -351,10 +338,6 @@ contains
 
       end do
 
-
-      ! print *, "Particle post-collision: "
-      ! print *,  sstate%v
-
     end subroutine
 
 
@@ -373,9 +356,9 @@ contains
     integer                               :: i,j,no
     integer,dimension(4)                  :: ndx,ndy
     integer                               :: n1,n2,nx,ny
-    double PRECISION                      :: h,rho0,k,mu,g,mass,h2,rcut
-    double PRECISION                      :: c0,cp,cv
-    double PRECISION                      :: dx,dy,r2
+    double precision                      :: h,rho0,k,mu,g,mass,h2,rcut
+    double precision                      :: c0,cp,cv
+    double precision                      :: dx,dy,r2
     double precision                      :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
 
     n         = sstate%nParticles
@@ -387,7 +370,7 @@ contains
     mass      = sstate%mass
     h2        = h*h
 
-    rcut    = params%rcut         ! is 9th element in sim_param vector....
+    rcut    = params%rcut
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
 
