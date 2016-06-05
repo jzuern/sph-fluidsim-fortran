@@ -29,17 +29,12 @@ This 2D SPH fluid simulation is loosely based on an [introductory paper](http://
 
 The code inside the source files is structured in a way as to reflect their role in the simulation.
 
-### gnufor2.f90: interface to call for Gnuplot instance inside FORTRAN program (credit to its )
-
-### integrate.f90: implementation of numerical integration technique
-
-### linkedlist.f90: implementation of linked list bookkeeping routines
-
-### sphfunctions:f90: implementation of particle interaction routines
-
-### util.f90: auxiliary functions with no other suitable place
-
-### program.f90: main program which starts simulation
+- gnufor2.f90: interface to call for Gnuplot instance inside FORTRAN program (credit to its )
+- integrate.f90: implementation of numerical integration technique
+- linkedlist.f90: implementation of linked list bookkeeping routines
+- sphfunctions:f90: implementation of particle interaction routines
+- util.f90: auxiliary functions with no other suitable place
+- program.f90: main program which starts simulation
 
 
 ## Visualization:
