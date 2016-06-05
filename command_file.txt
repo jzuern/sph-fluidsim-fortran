@@ -1,9 +1,8 @@
 set terminal  x11 size 600,600
-set output "data/frame00077.dat"
 unset key
 set xrange [0:1]
 set yrange [0:1]
 set grid
-plot "data_file.txt" using 1:2 with points pointtype  5 linecolor rgb "blue" linewidth 1
-pause 0.500E+00
+plot "data/frame00100.dat" using 1:2 with points pointtype 4 linecolor rgb "blue" linewidth 1
+pause 0.100E+00
 q

@@ -1714,7 +1714,7 @@
 		write ( file_unit, '(a)' ) 'pause 0'
 	end if
 !***********************************************************************************
-	write ( file_unit, '(a)' ) 'q'
+	! write ( file_unit, '(a)' ) 'q'
 	close ( unit = file_unit )
 !***********************************************************************************
 	call run_gnuplot (command_file_name)

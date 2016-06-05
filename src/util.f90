@@ -215,7 +215,7 @@ contains
 
       fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
       write (dummy,fmt) i ! converting integer to string using a 'internal file'
-      datafile = "dataframe" // trim(dummy) // ".dat"
+      datafile = "data/frame" // trim(dummy) // ".dat"
 
 
       !writing command file (here we specify the command file, from where gnuplot will
@@ -223,20 +223,21 @@ contains
       commandfile = "command_file.txt"
 
       open (unit=11, file=commandfile, status="replace")
-      write ( 11,*) "set terminal  x11 size 600,600"
-      line1 = "set output '" // datafile // "'" !TODO: find out why linebreak in string
-      write ( 11,*) line1
-      write ( 11,*) "unset key"
-      write ( 11,*) "set xrange [0:1]"
-      write ( 11,*) "set yrange [0:1]"
-      write ( 11,*) "set grid"
-      line2 = 'plot "' // commandfile // '" using 1:2 with points pointtype  4 linecolor rgb "blue" linewidth 1'
-      write ( 11,*) line2 !TODO: find out why linebreak in string
-      write ( 11,*) "pause 0.100E+00"
-      write ( 11,*) "q"
+      write ( 11,'(a,i2,a)') "set terminal  x11 size 600,600"
+      write ( 11,'(a,i2,a)') "unset key"
+      write ( 11,'(a,i2,a)') "set xrange [0:1]"
+      write ( 11,'(a,i2,a)') "set yrange [0:1]"
+      write ( 11,'(a,i2,a)') "set grid"
+      write ( 11, '(a,i2,a)' ) 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 4 linecolor rgb "blue" linewidth 1'
+      write ( 11,'(a,i2,a)') "pause 0.100E+00"
+      write ( 11,'(a,i2,a)') "q"
+
+      close (11)
 
       !calling gnuplot
       call run_gnuplot (commandfile)
+
+
 
   end subroutine
 
