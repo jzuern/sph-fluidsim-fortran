@@ -139,31 +139,60 @@ contains
   end subroutine
 
 
-  subroutine parse_input(parameter)
 
-    ! parse_input writes parameter from parameter input file into parameter array
+  subroutine initialize_parameters (params)
 
-    DOUBLE PRECISION, DIMENSION(9)  :: parameter
+    ! reads sim_parameter.dat file and saves
 
-    CHARACTER(len=32) :: filename
-    CHARACTER(len=32) :: line
-    integer :: i = 1, j
+    implicit none
+    type(sim_parameter)                        :: params
+    CHARACTER(len=32)                          :: inputfile
 
-    CALL get_command_argument(i, filename)
+    integer          :: nframes
+    integer          :: nSteps_per_frame
+    double precision :: h
+    double precision :: dt
+    double precision :: rho0
+    double precision :: k
+    double precision :: mu
+    double precision :: g
+    double precision :: rcut
 
-    ! process file filename
-    print *, "Parsing file ", filename
-    open (unit = 100, file = filename, action = 'read')
-    ! iterate through each line
-    do j = 1,  9
-      read(100,*) line
-      print *, line
-      read(line,*) parameter(j)   ! convert from character type to dp
-    end do
+    namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut
 
-    close(unit=100)
+    CALL get_command_argument(1, inputfile)
+    print *, "Parsing file ", inputfile , " ..."
 
-    print *, "Parsing completed"
+
+
+    open(unit=10, file=inputfile)
+    read(10,NML=SIMPARAMETER)
+    close(10)
+
+    params%nframes = nframes
+    params%nSteps_per_frame = nSteps_per_frame
+    params%h = h
+    params%dt = dt
+    params%rho0 = rho0
+    params%k = k
+    params%mu = mu
+    params%g = g
+    params%rcut = rcut
+
+    print *, "  nframes =   " , nframes
+    print *, "  nSteps_per_frame =   " , nSteps_per_frame
+    print *, "  h =   " , h
+    print *, "  dt =   " , dt
+    print *, "  rho0 =   " , rho0
+    print *, "  k =   " , k
+    print *, "  mu =   " , mu
+    print *, "  g =   " , g
+    print *, "  rcut =   " , rcut
+
+
+    print *, "...Parsing completed "
+
+
   end subroutine
 
 
@@ -200,7 +229,6 @@ contains
   subroutine plot_data_from_file(sstate,i)
 
       ! plots data from files
-      ! TODO: debugging
 
       use gnufor2
       type(systemstate),intent(in)                :: sstate
@@ -217,18 +245,17 @@ contains
       write (dummy,fmt) i ! converting integer to string using a 'internal file'
       datafile = "data/frame" // trim(dummy) // ".dat"
 
-
       !writing command file (here we specify the command file, from where gnuplot will
       !                      get all the info about plotting specifications)
       commandfile = "command_file.txt"
 
       open (unit=11, file=commandfile, status="replace")
-      write ( 11,'(a,i2,a)') "set terminal  x11 size 600,600"
+      write ( 11,'(a,i2,a)') "set terminal  x11 size 800,800"
       write ( 11,'(a,i2,a)') "unset key"
       write ( 11,'(a,i2,a)') "set xrange [0:1]"
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
       write ( 11,'(a,i2,a)') "set grid"
-      write ( 11, '(a,i2,a)' ) 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 4 linecolor rgb "blue" linewidth 1'
+      write ( 11, '(a,i2,a)' ) 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
       write ( 11,'(a,i2,a)') "pause 0.100E+00"
       write ( 11,'(a,i2,a)') "q"
 
@@ -259,9 +286,9 @@ contains
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
 
-    fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
-    write (dummy,fmt) i ! converting integer to string using a 'internal file'
-    file='data/frame'//trim(dummy)//'.dat' !concatenating stuff to create file name
+    fmt = '(I5.5)'                         ! an integer of width 5 with zeros at the left
+    write (dummy,fmt) i                    ! converting integer to string using a 'internal file'
+    file='data/frame'//trim(dummy)//'.dat' ! concatenating stuff to create file name
 
     ! actual plotting command:
     call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 600,600", filename = file)
@@ -270,24 +297,6 @@ contains
 
 
 
-  function initialize_parameters (params) result(param_type)
 
-    ! writes entries of parameter vector into param_type object
-
-    implicit none
-    DOUBLE PRECISION, DIMENSION(9)             :: params
-    type(sim_parameter)                        :: param_type
-
-    param_type%nframes           = params(1)
-    param_type%nSteps_per_frame  = params(2)
-    param_type%h                 = params(3)
-    param_type%dt                = params(4)
-    param_type%rho0              = params(5)
-    param_type%k                 = params(6)
-    param_type%mu                = params(7)
-    param_type%g                 = params(8)
-    param_type%rcut              = params(9)
-
-  end function
 
 end module util

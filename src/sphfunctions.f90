@@ -153,22 +153,20 @@ contains
   end subroutine
 
   subroutine compute_density_without_ll(sstate, params)
+
     use util
-    type (systemstate)                          :: sstate
-    type(sim_parameter)											    :: params
-    integer, dimension(4)                       :: ndx,ndy
-    integer, dimension(2)                       :: nmax
-
-    integer              :: n
-    integer              :: i,j
-    double precision     :: mass,h,h2,h8,C,rcut
-
-    double precision :: dx,dy,r2,z, rho_ij
+    type (systemstate)                       :: sstate
+    type(sim_parameter)											 :: params
+    integer, dimension(4)                    :: ndx,ndy
+    integer, dimension(2)                    :: nmax
+    integer                                  :: n
+    integer                                  :: i,j
+    double precision                         :: mass,h,h2,h8,C,rcut
+    double precision                         :: dx,dy,r2,z, rho_ij
 
     h = params%h
     h2 = h*h
     h8 = h2*h2*h2*h2
-
 
     n          = sstate%nParticles
     mass       = sstate%mass
@@ -207,17 +205,13 @@ contains
 
     use util
     type (systemstate)                    :: sstate
-    type(sim_parameter)											:: params
+    type(sim_parameter)										:: params
     double precision                      :: h,hh
-    integer                               :: count, p
+    integer                               :: count = 0, p
     double precision                      :: x,y, rd
 
     h = params%h ! size of particles
     hh = h/1.0d0 ! scaling
-
-
-    count = 0
-
 
     x = 0.d0
     do while (x < 1.d0)
@@ -275,8 +269,7 @@ contains
     end if
 
     !Coefficient of resitiution
-    ! damp = 0.75d0
-    damp = 0.5d0
+    damp = 0.75d0
 
     !scale back the distance traveled based on time from collision
     tbounce = (sstate%x(i-1+which) - barrier) / sstate%v(i-1+which)
@@ -385,36 +378,38 @@ contains
 
     ! constants for interaction term
     c0 = mass/pi/(h2*h2)
-    cp = 15.d0*k
-    cv = -40.d0*mu
+    cp = 15.0d0*k
+    cv = -40.0d0*mu
 
     ! update neighbor list and density distribution
     call setup_neighbour_list(sstate,params,ll,lc)
-
     call compute_density_with_ll(sstate,params,ll,lc)
 
     ndx = (/ 1,1,0,-1/)
     ndy = (/ 0,1,1,1 /)
 
-
+    ! $omp parallel private (i , j ) shared (lc , ll )
+    ! $omp do
     do i = 1,nmax(1)
+          ! $omp do
       do j = 1,nmax(2)
-        ! print *, "lc(i,j) = ", lc(i,j)
+
+        ! check for particles in cell (i,j)
         if (lc(i,j) /= -1) then
           n1 = lc(i,j)
-          ! print *, "test"
+
+          ! check for other particles in same cell as n1
           do while (n1 /= -1)
             n2 = ll(n1)
             rhoi = sstate%rho(n1)
-            do while(n2 /= -1)
 
+            ! go through all particles in same cell as n1
+            do while(n2 /= -1)
               dx = sstate%x(2*n2-1) - sstate%x(2*n1-1);
               dy = sstate%x(2*n2-0) - sstate%x(2*n1-0);
               r2 = dx*dx + dy*dy
-              ! print *, r2, h2
 
-              if(r2 < h2) then
-                ! print *, "particles touching", r2, h2
+              if(r2 < h2) then ! particles touching
                 rhoj = sstate%rho(n2)
                 q = sqrt(r2)/h
                 u = 1-q
@@ -424,6 +419,7 @@ contains
                 dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
                 dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
 
+                ! update velocities according to collision details
                 sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
                 sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
                 sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
@@ -432,7 +428,7 @@ contains
               n2 = ll(n2)
             end do
 
-            !neighbor cells
+            !check for neighboring particles in neighbor cells as well
             do no = 1,4
               nx = i + ndx(no)
               ny = j + ndy(no)
@@ -450,10 +446,8 @@ contains
                 dx = sstate%x(2*n2-1)-sstate%x(2*n1-1)
                 dy = sstate%x(2*n2-0)-sstate%x(2*n1-0)
                 r2 = dx*dx + dy*dy
-                ! print *, r2, h2
 
                 if (r2 < h2) then
-                  ! print *, "particles touching"
 
                   rhoj = sstate%rho(n2)
                   q = sqrt(r2)/h
@@ -469,7 +463,6 @@ contains
                   sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
                   sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
 
-
                 end if
                 n2 = ll(n2)
               end do
@@ -478,7 +471,10 @@ contains
           end do
         end if
       end do
+          ! $omp do
     end do
+    ! $omp end do
+    ! $omp end parallel
 
 
   end subroutine

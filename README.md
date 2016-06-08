@@ -44,18 +44,26 @@ Gnuplot with [Fortran interface](http://www.math.yorku.ca/~akuznets/gnufor2/) Ed
 
 ## Simulation parameters:
 
-Command line argument to setup file setup.dat
+Command line argument to parameter file sim_parameter.dat
 
 Exemplary good parameters are:
 ```
 200        - Number of frames
-100         - Number of steps per frame. Default: 100
-0.004        - Size of particles (radius). Also: Distance of particles in initial configuration
-0.0001      - Time step size Default: 1E-4
-1000        - Reference density Default: 1000
-100000        - Bulk modulus (Kompressionsmodul) Default: 1E3
-0.01         - Viscosity Default: 0.1
-9.81        - gravity strength Default: 9.81
-0.01         - Cutoff radius (as fraction of total size of simulation grid for linked lists neighbor tracking
+100        - Number of steps per frame. Default: 100
+0.004      - Size of particles (radius). Also: Distance of particles in initial configuration
+0.0001     - Time step size Default: 1E-4
+1000       - Reference density Default: 1000
+100000     - Bulk modulus (Kompressionsmodul) Default: 1E3
+0.01       - Viscosity Default: 0.1
+9.81       - gravity strength Default: 9.81
+0.01       - Cutoff radius (as fraction of total size of simulation grid for linked lists neighbor tracking
 ```
-Just create a sim_setup.dat file in your working directory and copy those lines into it.
+Create a sim_parameter.dat file in your working directory and copy those lines into it.
+(or use the provided file)
+
+## TO DO
+
+- improve visualization
+- use openmp in order to parallelize program parts and increase speed
+- 
+

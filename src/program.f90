@@ -32,17 +32,16 @@ integer																	:: nSteps_per_frame     ! number of steps between shown 
 integer 																:: i,j,k 								! loop iteration variables
 integer, allocatable, dimension(:)  	  :: ll 									! linked list array
 integer, allocatable, dimension(:,:)  	:: lc 									! linked cell array
-double precision, dimension (9)    	   	:: simulation_parameter ! Initialize sim param vector
 type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 double precision												:: dt 									! (constant) time step for numerical integration
 
 
 ! Parse input parameter file
-call parse_input(simulation_parameter)
+! call parse_input(simulation_parameter)
 
 ! Write contents of parameter array into sim_parameter type (handy usage)
-params = initialize_parameters(simulation_parameter)
+call initialize_parameters(params)
 
 ! initialize particles
 call init_particles(sstate,params,ll,lc)
