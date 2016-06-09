@@ -3,7 +3,7 @@ module util
   !Auxiliary utility types, subroutines, and functions
 
   !Created by Jannik Zuern on 05/16/2016
-	!Last modified: 05/24/2016
+	!Last modified: 06/08/2016
 
 
 implicit none
@@ -157,7 +157,7 @@ contains
     namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut
 
     CALL get_command_argument(1, inputfile)
-    print *, "Parsing file ", inputfile , " ..."
+    print *, "Parsing file ", inputfile
 
 
 
@@ -246,21 +246,18 @@ contains
       commandfile = "command_file.txt"
 
       open (unit=11, file=commandfile, status="replace")
-      write ( 11,'(a,i2,a)') "set terminal  x11 size 800,800"
+      write ( 11,'(a,i2,a)') "set terminal  x11 size 1000,1000"
       write ( 11,'(a,i2,a)') "unset key"
       write ( 11,'(a,i2,a)') "set xrange [0:1]"
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
       write ( 11,'(a,i2,a)') "set grid"
-      write ( 11, '(a,i2,a)' ) 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
-      write ( 11,'(a,i2,a)') "pause 0.100E+00"
+      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
+      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause of 0.1 s
       write ( 11,'(a,i2,a)') "q"
-
       close (11)
 
       !calling gnuplot
       call run_gnuplot (commandfile)
-
-
 
   end subroutine
 
@@ -287,7 +284,7 @@ contains
     file='data/frame'//trim(dummy)//'.dat' ! concatenating stuff to create file name
 
     ! actual plotting command:
-    call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 600,600", filename = file)
+    call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 800,800", filename = file)
 
   end subroutine
 

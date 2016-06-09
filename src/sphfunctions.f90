@@ -85,18 +85,16 @@ contains
     rcut = params%rcut            ! is 9th element in sim_param vector....
     nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
-    ! print *, "test"
 
-    ! $OMP PARALLEL DO PRIVATE(i,j,n1,n2,ndx,ndy,nx,ny)
+    !$omp parallel do private(n1,n2,dx,dy,r2,no,nx,ny,z,rho_ij)
     do i = 1,nmax(1)
       do j = 1,nmax(2)
-        ! print *, i,j
+
         if (lc(i,j) /= -1) THEN
           n1 = lc(i,j)
           do while (n1 /= -1)
             n2 = ll(n1)
             sstate%rho(n1) = sstate%rho(n1) + 4*mass/Pi/h2
-
 
             do while(n2 /= -1)
               dx = sstate%x(2*n1-1) - sstate%x(2*n2-1)
@@ -113,13 +111,10 @@ contains
               n2 = ll(n2)
             end do
 
-
             ! Now the neighboring cells of cell i,j
             do no = 1,4
-              ! print *, "no = ", no
               nx = i+ndx(no)
               ny = j+ndy(no)
-              ! print *, nx,ny
               !boundary conditions
               if (nx <         1)  cycle
               if (nx > nmax(1)  )  cycle
@@ -146,7 +141,7 @@ contains
         end if
       end do
     end do
-    ! $OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 
 
 
@@ -240,7 +235,7 @@ contains
           rd = rd * 0.0001d0 !scale number down
 
           ! add some random noise to particle positions in order to prevent any
-          ! symmetries to be preserved
+          ! symmetries to be preserved during simulation
           sstate%x(2*p-1) = x + rd
           sstate%x(2*p-0) = y + rd
           sstate%v(2*p-1) = 0.d0
@@ -388,10 +383,9 @@ contains
     ndx = (/ 1,1,0,-1/)
     ndy = (/ 0,1,1,1 /)
 
-    ! $omp parallel private (i , j ) shared (lc , ll )
-    ! $omp do
+    ! Use openMP to parallelize cell access
+    !$omp parallel do private(n1,n2,rhoi,dx,dy,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,no,nx,ny)
     do i = 1,nmax(1)
-          ! $omp do
       do j = 1,nmax(2)
 
         ! check for particles in cell (i,j)
@@ -471,10 +465,9 @@ contains
           end do
         end if
       end do
-          ! $omp do
     end do
-    ! $omp end do
-    ! $omp end parallel
+    !$omp end parallel do
+
 
 
   end subroutine

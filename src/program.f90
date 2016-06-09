@@ -91,14 +91,13 @@ do i = 1,nFrames
 	!.. or we can first write the data to files and plot them later (in separate loop)
 	call write_data_to_file(sstate,i)
 
-
 end do
 
 
 !print out elapsed time:
 call system_clock ( t2, clock_rate, clock_max )
-write ( *, * ) 'Elapsed time = ', real ( t2 - t1 ) / real ( clock_rate ), "seconds, which is an average of " &
-														 & ,  real ( t2 - t1 ) / real ( clock_rate ) / real(nFrames), " seconds per frame."
+write ( *, * ) 'Elapsed time = ', real (t2-t1)/real(clock_rate), 'seconds, which is an average of ' &
+														 & ,  real (t2-t1)/real(clock_rate)/real(nFrames), ' seconds per frame.'
 
 !interrupt execution until keyboard interaction
 print *, "Press any key to start plotting"
