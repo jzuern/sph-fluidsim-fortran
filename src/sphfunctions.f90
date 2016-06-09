@@ -74,8 +74,6 @@ contains
     h2 = h*h
     h8 = h2*h2*h2*h2
 
-
-
     n          = sstate%nParticles
     mass       = sstate%mass
 
@@ -89,6 +87,7 @@ contains
     nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
     ! print *, "test"
 
+    ! $OMP PARALLEL DO PRIVATE(i,j,n1,n2,ndx,ndy,nx,ny)
     do i = 1,nmax(1)
       do j = 1,nmax(2)
         ! print *, i,j
@@ -147,6 +146,7 @@ contains
         end if
       end do
     end do
+    ! $OMP END PARALLEL DO
 
 
 

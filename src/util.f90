@@ -7,11 +7,7 @@ module util
 
 
 implicit none
-!
-!
-! private
-! public :: systemstate, sim_parameter, alloc_state, parse_input, circ_indicator, box_indicator , &
-! free_state , plot_data_immediately, plot_data_from_file,write_data_to_file , initialize_parameters, Pi
+
 
   double precision, PARAMETER :: Pi = 3.1415927d0
 

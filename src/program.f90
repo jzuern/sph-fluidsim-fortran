@@ -36,6 +36,13 @@ type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 double precision												:: dt 									! (constant) time step for numerical integration
 
+INTEGER 																:: t1,t2, clock_rate, clock_max ! for time counting
+
+
+call system_clock ( t1, clock_rate, clock_max )
+
+
+
 
 ! Parse input parameter file
 ! call parse_input(simulation_parameter)
@@ -87,6 +94,13 @@ do i = 1,nFrames
 
 end do
 
+
+!print out elapsed time:
+call system_clock ( t2, clock_rate, clock_max )
+write ( *, * ) 'Elapsed time = ', real ( t2 - t1 ) / real ( clock_rate ), "seconds, which is an average of " &
+														 & ,  real ( t2 - t1 ) / real ( clock_rate ) / real(nFrames), " seconds per frame."
+
+!interrupt execution until keyboard interaction
 print *, "Press any key to start plotting"
 read(*,*)
 

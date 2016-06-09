@@ -12,7 +12,7 @@ FCFLAGS = -g -fbounds-check
 SOURCEPATH = src
 
 
-# libraries needed for linking
+# libraries needed for linking: openMP
 LDFLAGS =-fopenmp
 
 # List of executables to be built within the package
