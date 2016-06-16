@@ -2,8 +2,7 @@
 FC = f95
 
 # flags for debugging or for maximum performance, comment as necessary
-FCFLAGS = -g -fbounds-check
-# FCFLAGS = -O2
+FCFLAGS = -g -fbounds-check -Wall
 
 # flags forall (e.g. look for system .mod files, required in gfortran)
 # FCFLAGS += -I/usr/lib

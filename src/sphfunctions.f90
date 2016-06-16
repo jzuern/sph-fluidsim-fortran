@@ -11,6 +11,61 @@ implicit none
 contains
 
 
+  subroutine count_solid_particles(sstate,params)
+
+    use util
+    type(systemstate)                           :: sstate !system state object
+    type(sim_parameter)											    :: params
+    integer                                     :: particle = 1 ! particle iterator
+
+    double precision :: hh, x, y
+
+    hh = 0.5d0 * params%h
+
+
+
+
+
+  end subroutine
+
+
+  subroutine update_solid_particles_positions(sstate,params)
+
+    ! updates solid particles position solely based on passed time
+
+    use util
+    type(systemstate)                           :: sstate !system state object
+    type(sim_parameter)											    :: params
+
+    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center
+
+    integer :: particle
+
+    double precision :: phi,phi_new, radius,dist_x,dist_y
+
+    do particle = 1 , sstate%nSolidParticles ! start loop at first solid particle
+
+      ! convert positions from cartesian to polar coordinates
+      dist_x = sstate%x(2*particle-1) - center(1)
+      dist_y = sstate%x(2*particle  ) - center(2)
+
+      radius  =  SQRT (dist_x*dist_x + dist_y*dist_y)
+      phi     =  ATAN2 (dist_x , dist_y)
+
+      phi_new =  phi + params%dphi
+
+
+      ! convert positions back to cartesian coordinates
+      sstate%x(2*particle-1) = center(1) + radius * SIN(phi_new)
+      sstate%x(2*particle  ) = center(2) + radius * COS(phi_new)
+
+    end do
+
+  end subroutine
+
+
+
+
   subroutine init_particles(sstate,params,ll,lc)
 
     use util
@@ -37,14 +92,23 @@ contains
     integer, allocatable, dimension(:,:)        :: lc
     double precision                            :: rho0
     double precision                            :: rho2s,rhos
-    integer                                     :: i
+    integer                                     :: i, idxstart, idxend
 
     rho0 = params%rho0
 
-    call compute_density_without_ll(sstate,params)
 
-    rhos  = SUM(sstate%rho)
-    rho2s = SUM(sstate%rho * sstate%rho);
+    ! get index range start and end corresponding to liquid particles
+    idxstart = sstate%nSolidParticles + 1
+    idxend   = sstate%nParticles
+
+
+    call compute_density_initially(sstate,params) ! initial density calculation
+
+    ! calculate sum of liquid particle densities
+    rhos  = SUM(sstate%rho(idxstart : idxend))
+
+    ! calculate sum of squared liquid particle densities
+    rho2s = SUM(sstate%rho(idxstart : idxend) * sstate%rho(idxstart : idxend));
 
 
     sstate%mass = 1.d0
@@ -60,21 +124,21 @@ contains
     type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
-    integer, dimension(4)                       :: ndx,ndy
+    integer, dimension(4)                       :: ndx,ndy,ndz
     integer, dimension(2)                       :: nmax
 
-    integer              :: n, nx ,ny
+    integer              :: nx ,ny, nz
     integer              :: n1,n2,no
     integer              :: i,j
-    double precision     :: mass,h,h2,h8,C,rcut
-
-    double precision :: dx,dy,r2,z, rho_ij
+    double precision     :: mass,h,h2,h8,C
+    double precision     :: dx,dy,dz,r2,z, rho_ij
+    ! integer :: n
 
     h = params%h
     h2 = h*h
     h8 = h2*h2*h2*h2
 
-    n          = sstate%nParticles
+    ! n          = sstate%nParticles
     mass       = sstate%mass
 
     C = mass / pi / h8;
@@ -82,13 +146,13 @@ contains
     ndx = (/1,1,0,-1 /)
     ndy = (/0,1,1, 1 /)
 
-    rcut = params%rcut            ! is 9th element in sim_param vector....
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
+    nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
+
 
     !$omp parallel do private(n1,n2,dx,dy,r2,no,nx,ny,z,rho_ij)
-    do i = 1,nmax(1)
-      do j = 1,nmax(2)
+    do i = 1,nmax(1) ! x-coordinate
+      do j = 1,nmax(2) ! y-coordinate
 
         if (lc(i,j) /= -1) THEN
           n1 = lc(i,j)
@@ -147,7 +211,7 @@ contains
 
   end subroutine
 
-  subroutine compute_density_without_ll(sstate, params)
+  subroutine compute_density_initially(sstate, params)
 
     use util
     type (systemstate)                       :: sstate
@@ -156,7 +220,7 @@ contains
     integer, dimension(2)                    :: nmax
     integer                                  :: n
     integer                                  :: i,j
-    double precision                         :: mass,h,h2,h8,C,rcut
+    double precision                         :: mass,h,h2,h8,C
     double precision                         :: dx,dy,r2,z, rho_ij
 
     h = params%h
@@ -171,9 +235,8 @@ contains
     ndx = (/1,1,0,-1 /) ! index offsets of neighboring cells in x direction
     ndy = (/0,1,1, 1 /) ! index offsets of neighboring cells in y direction
 
-    rcut = params%rcut
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
+    nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
 
     do i = 1,n
       sstate%rho(i) = sstate%rho(i) + 4*mass/Pi/h2
@@ -198,55 +261,116 @@ contains
 
   subroutine place_particles(sstate,params)
 
+    ! 1.0: we count solid particles
+    ! 1.1: we count liquid particles
+    ! 1.5: we allocate space accordingly
+    ! 2.0: we place solid particles
+    ! 2.1: we place liquid particles
+
+
     use util
     type (systemstate)                    :: sstate
     type(sim_parameter)										:: params
-    double precision                      :: h,hh
-    integer                               :: count = 0, p
+    double precision                      :: h,hh_liquid, hh_solid
+    integer                               :: solidParticle,liquidParticle
     double precision                      :: x,y, rd
+    integer                               :: nSolidParticles = 0, nLiquidParticles = 0
+
+
+
+    print *, " in place particles"
 
     h = params%h ! size of particles
-    hh = h/1.0d0 ! scaling
 
+    hh_liquid = 1.0d0*h
+    hh_solid  = 1.0d0*h
+
+
+    ! count solid particles
     x = 0.d0
     do while (x < 1.d0)
       y = 0.d0
       do while (y < 1.d0)
-        count = count + box_indicator(x,y)
-        y = y + hh
+        if (cross_indicator(x,y) /= 0) THEN
+          nSolidParticles = nSolidParticles + 1
+        end if
+        y = y + hh_solid
       end do
-      x = x + hh
+      x = x + hh_solid
     end do
 
-    print *, "Number of particles in simulation: " , count
+    sstate%nSolidParticles = nSolidParticles;
 
-    sstate%nParticles = count     ! set number of particles to counted value
+    ! count liquid particles
+    x = 0.d0
+    do while (x < 1.d0)
+      y = 0.d0
+      do while (y < 1.d0)
+        if (box_indicator(x,y) /= 0 .AND. cross_indicator(x,y) == 0) THEN
+          nLiquidParticles = nLiquidParticles + 1
+        end if
+        y = y + hh_liquid
+      end do
+      x = x + hh_liquid
+    end do
+
+    print *, "Number of liquid particles in simulation: " , nLiquidParticles
+    print *, "Number of solid particles in simulation: " , nSolidParticles
+
+    ! set number of liquid particles to counted value
+    sstate%nLiquidParticles = nLiquidParticles
+
+    ! set total number particles
+    sstate%nParticles = sstate%nSolidParticles + nLiquidParticles
+
     call alloc_state(sstate,params)      ! allocate fields for x,v,vh,a
 
-    p = 1 ! particle iterator
+    solidParticle = 1 ! current particle
 
+    ! place solid particles
+    x = 0.d0
+    do while (x < 1.d0)
+      y = 0.d0
+      do while (y < 1.d0)
+        if (cross_indicator(x,y) /= 0) THEN
+          sstate%x(2*solidParticle-1) = x
+          sstate%x(2*solidParticle-0) = y
+          solidParticle = solidParticle + 1
+        end if
+        y = y + hh_solid
+      end do
+      x = x + hh_solid
+    end do
+
+
+    liquidParticle = sstate%nSolidParticles + 1 ! current particle
+
+    ! place liquid particles
     x = 0.d0
     do while (x < 1.d0)
       y = 0.d0
       do while (y < 1.d0)
 
-        if (box_indicator(x,y) /= 0) THEN
+        if (box_indicator(x,y) /= 0 .AND. cross_indicator(x,y) == 0) THEN
           CALL RANDOM_NUMBER(rd)   ! random number between 0 and 1
-          rd = rd * 0.0001d0 !scale number down
 
           ! add some random noise to particle positions in order to prevent any
           ! symmetries to be preserved during simulation
-          sstate%x(2*p-1) = x + rd
-          sstate%x(2*p-0) = y + rd
-          sstate%v(2*p-1) = 0.d0
-          sstate%v(2*p-0) = 0.d0
-          p = p + 1
+
+          sstate%x(2*liquidParticle-1) = x + rd*0.0001d0
+          sstate%x(2*liquidParticle-0) = y + rd*0.0001d0
+          sstate%v(2*liquidParticle-1) = 0.d0
+          sstate%v(2*liquidParticle-0) = 0.d0
+          liquidParticle = liquidParticle + 1
         end if
 
-        y = y + hh
+        y = y + hh_liquid
       end do
-      x = x + hh
+      x = x + hh_liquid
     end do
+
+
+    print *, " out of place particles"
 
   end subroutine
 
@@ -292,7 +416,7 @@ contains
       use util
       type (systemstate) :: sstate
 
-      integer :: i,n
+      integer :: i,first,last
 
       ! Boundaries of computational domain
       double precision :: xmin = 0.0d0
@@ -300,9 +424,10 @@ contains
       double precision :: ymin = 0.0d0
       double precision :: ymax = 1.0d0
 
-      n = sstate%nParticles
+      first = sstate%nSolidParticles+1
+      last  = sstate%nParticles
 
-      do i = 1,n ! correct
+      do i = first,last
 
         if (sstate%x(2*i - 1) < xmin) then
           ! print *, "particle at left wall"
@@ -344,7 +469,7 @@ contains
     integer                               :: i,j,no
     integer,dimension(4)                  :: ndx,ndy
     integer                               :: n1,n2,nx,ny
-    double precision                      :: h,rho0,k,mu,g,mass,h2,rcut
+    double precision                      :: h,rho0,k,mu,g,mass,h2
     double precision                      :: c0,cp,cv
     double precision                      :: dx,dy,r2
     double precision                      :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
@@ -358,9 +483,8 @@ contains
     mass      = sstate%mass
     h2        = h*h
 
-    rcut    = params%rcut
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
+    nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
 
     !clearing ll and lc
     lc = -1
@@ -452,11 +576,16 @@ contains
                   dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
                   dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
 
-                  sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
-                  sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
-                  sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
-                  sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
-
+                  ! test if particle n1 is actually liquid particle.
+                  ! Then we can update acceleration accordingly
+                  if ( n1 > sstate%nSolidParticles) THEN
+                    sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
+                    sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                  end if
+                  if (n2 > sstate%nSolidParticles) THEN
+                    sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
+                    sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+                  end if
                 end if
                 n2 = ll(n2)
               end do

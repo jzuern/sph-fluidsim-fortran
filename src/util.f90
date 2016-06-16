@@ -23,7 +23,9 @@ implicit none
      double precision,allocatable,dimension(:) :: rho  ! density
 
      double precision                          :: mass ! mass
-     integer                                   :: nParticles ! number of particles
+     integer                                   :: nLiquidParticles ! number of particles in liquid
+     integer                                   :: nSolidParticles  ! number of particles in solid object
+     integer                                   :: nParticles       ! total number of particles in simulation
 
   end type systemstate
 
@@ -42,7 +44,9 @@ implicit none
      integer          :: k                  ! Bulk modulus (Kompressionsmodul) Default: 1E3
      double precision :: mu                 ! Viscosity Default: 0.1
      double precision :: g                  ! gravity strength Default: 9.81
-     double precision :: rcut               ! Cutoff radius (in multiples of total size of simulation grid for linked lists neighbor tracking
+     double precision :: rcut_x             ! Cutoff radius in x-direction for cells (as fraction of total size of simulation grid)
+     double precision :: rcut_y             ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
+     double precision :: dphi               ! rotation speed of cross
 
   end type sim_parameter
 
@@ -51,18 +55,49 @@ implicit none
 contains
 
 
+  function cross_indicator (x,y) result(res)
+
+    !indicates whether point (x,y) lies within a cross (res == 1) or not (res == 0)
+
+    implicit none
+
+    double precision,intent(in)     :: x,y
+    logical                         :: tmp,b1,b2
+    integer                         :: res
+
+    double precision :: diameter  = 0.7d0  ! diameter of rotating cross
+    double precision :: thickness = 0.02d0 ! thickness of roating cross beams
+    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center
+
+
+    res = 0
+
+    ! check wheter x and y coordinates lay within domain of cross
+    b1 = ( ABS(x - center(1)) < diameter/2  ) .AND. ( ABS(y - center(2)) < thickness/2  )
+    b2 = ( ABS(y - center(2)) < diameter/2  ) .AND. ( ABS(x - center(1)) < thickness/2  )
+
+    if (b1 .OR. b2) THEN
+      res = 1
+    end if
+
+  end function
+
+
+
+
+
   function box_indicator (x,y) result(res)
 
     !indicates whether point (x,y) lies within rectangular box (res == 1) or not (res == 0)
 
     implicit none
 
-    double precision,intent(in)                :: x,y
+    double precision,intent(in)     :: x,y
     logical                         :: tmp
     integer                         :: res
 
     res = 0
-    tmp = (x < 0.3d0) .AND. (y > 0.0d0) .AND. (x > 0.0d0) .AND. (y < 0.7d0)
+    tmp = (x < 1.0d0) .AND. (x > 0.5d0) .AND. (y > 0.8d0) .AND. (y < 1.0d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -152,13 +187,15 @@ contains
     double precision :: k
     double precision :: mu
     double precision :: g
-    double precision :: rcut
+    double precision :: rcut_x
+    double precision :: rcut_y
+    double precision :: dphi
 
-    namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut
+
+    namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut_x,rcut_y,dphi
 
     CALL get_command_argument(1, inputfile)
     print *, "Parsing file ", inputfile
-
 
 
     open(unit=10, file=inputfile)
@@ -173,17 +210,22 @@ contains
     params%k = k
     params%mu = mu
     params%g = g
-    params%rcut = rcut
+    params%rcut_x = rcut_x
+    params%rcut_y = rcut_y
+    params%dphi = dphi
 
-    print *, "  nframes =   " , nframes
-    print *, "  nSteps_per_frame =   " , nSteps_per_frame
-    print *, "  h =   " , h
-    print *, "  dt =   " , dt
-    print *, "  rho0 =   " , rho0
-    print *, "  k =   " , k
-    print *, "  mu =   " , mu
-    print *, "  g =   " , g
-    print *, "  rcut =   " , rcut
+
+    ! print *, "  nframes =   " , nframes
+    ! print *, "  nSteps_per_frame =   " , nSteps_per_frame
+    ! print *, "  h =   " , h
+    ! print *, "  dt =   " , dt
+    ! print *, "  rho0 =   " , rho0
+    ! print *, "  k =   " , k
+    ! print *, "  mu =   " , mu
+    ! print *, "  g =   " , g
+    ! print *, "  rcut_x =   " , rcut_x
+    ! print *, "  rcut_y =   " , rcut_y
+    ! print *, "  dphi =   " , dphi
 
 
     print *, "...Parsing completed "
@@ -213,6 +255,7 @@ contains
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
 
+    ! writes particle positions into file
     do k = 1,n
       write (10,*) x(k),y(k)
     end do
@@ -252,7 +295,7 @@ contains
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
       write ( 11,'(a,i2,a)') "set grid"
       write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
-      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause of 0.1 s
+      write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause of 0.1 s
       write ( 11,'(a,i2,a)') "q"
       close (11)
 

@@ -3,6 +3,6 @@ unset key
 set xrange [0:1]
 set yrange [0:1]
 set grid
-plot "data/frame00500.dat" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1
-pause 0.100E+00
+plot "data/frame00200.dat" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1
+pause 0.200E+00
 q

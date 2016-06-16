@@ -21,22 +21,23 @@ contains
 
     integer               :: i
     integer               :: ntot
-    double precision      :: rcut
+    double precision      :: rcut_x,rcut_y
     integer, dimension(2) :: nmax, nidx
 
-    ntot = sstate%nParticles   ! total number of particles
-    rcut = params%rcut
+    rcut_x = params%rcut_x
+    rcut_y = params%rcut_y
 
 
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in each dimension
 
-    do i = 1,ntot
-      nidx(1) = int(floor((sstate%x(2*i-1))/rcut)); !x coordinate
+    nmax(1) = int(floor(1.d0/rcut_x)) ! maximum number of cells in each dimension
+    nmax(2) = int(floor(1.d0/rcut_y)) ! maximum number of cells in each dimension
+
+    do i = 1 , sstate%nParticles
+      nidx(1) = int(floor((sstate%x(2*i-1))/rcut_x)); !x coordinate
       nidx(1) = min(nidx(1),nmax(1))
       nidx(1) = max(nidx(1),1)
 
-      nidx(2) = int(floor((sstate%x(2*i-0))/rcut)); !y coordinate
+      nidx(2) = int(floor((sstate%x(2*i-0))/rcut_y)); !y coordinate
       nidx(2) = min(nidx(2),nmax(2))
       nidx(2) = max(nidx(2),1)
 
@@ -60,17 +61,11 @@ contains
     integer, dimension(:,:)        :: lc
 
     integer               :: i,j,n
-    integer               :: ntot
-    double precision      :: rcut
     integer, dimension(2) :: nmax, nidx
 
 
-    ntot = sstate%nParticles   ! total number of particles
-    rcut = params%rcut
-
-
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
+    nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
 
     do i = 1, nmax(1)
       do j = 1,nmax(2)
@@ -97,12 +92,8 @@ contains
     use util
     type(systemstate)                     :: sstate
     integer, allocatable, dimension(:)    :: ll
-    integer                               :: i
-    integer                               :: ntot
 
-
-    ntot  = sstate%nParticles
-    allocate(ll(ntot))
+    allocate(ll(sstate%nParticles))
 
     ll = -1 ! initialize ll with -1 (empty cell)
 
@@ -114,17 +105,14 @@ contains
     type(systemstate)                        :: sstate
     type(sim_parameter)									  	 :: params
     integer, allocatable, dimension(:,:)     :: lc
-    double precision                         :: rcut
     integer, dimension(2)                    :: nmax
     integer                                  :: i,j
     integer                                  :: ntot
 
     ntot = sstate%nParticles
-    rcut = params%rcut ! cutoff radius
 
-
-    nmax(1) = int(floor(1.d0/rcut)) ! maximum number of cells in x dimension
-    nmax(2) = int(floor(1.d0/rcut)) ! maximum number of cells in y dimension
+    nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
+    nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
 
     allocate(lc(nmax(1),nmax(2)))
     lc = -1 ! initialize lc with -1 (empty cell)

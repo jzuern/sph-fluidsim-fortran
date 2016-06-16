@@ -56,7 +56,7 @@ This file is read using FORTRAN's namelist routine
 Exemplary parameters for water-like behavior are:
 ```
 &SIMPARAMETER
-nframes=500                 ! Number of frames
+nframes=50                  ! Number of frames
 nSteps_per_frame=50         ! Number of steps per frame. Default: 100
 h=0.005                     ! Size of particles (radius). Also: Distance of particles in initial configuration
 dt=0.0001                   ! Time step size Default: 1E-4
@@ -64,9 +64,17 @@ rho0=10000                  ! Reference density Default: 1000
 k=100000                    ! Bulk modulus Default: 100000
 mu=0.1                      ! Viscosity Default: 0.1
 g=9.81                      ! gravity strength Default: 9.81
-rcut=0.01                   ! Cutoff radius (as fraction of total size of simulation grid for linked lists neighbor tracking
+rcut_x=0.01                 ! Cutoff radius in x-direction for cells (as fraction of total size of simulation grid)
+rcut_y=0.01                 ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
 /
 
 ```
 Create a sim_parameter.dat file in your working directory and copy those lines into it.
 (or use the provided file)
+
+
+## TODO
+
+- continue implementation of
+- update and improve and elongate README.md
+- add images to README.md ?

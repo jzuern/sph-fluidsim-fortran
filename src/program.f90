@@ -3,14 +3,10 @@ program sph
 	! Main program of project
 
 	!Created by Jannik Zuern on 05/16/2016
-	!Last modified: 05/24/2016
+	!Last modified: 06/19/2016
 
 
 	use gnufor2       			!Module: gnuplot fortran visualizations
-	! use gnuplot_module  			!better Gnuplot visualization options
-	! use gnuplot_module_data		!needed by gnuplot_module
-	! use datatypes, only : i4b !needed by gnuplot_module
-
 
 	use integrate     !Module: definition of integration functions (leapfrog)
 	use sphfunctions  !Module: implementation of sph mechanics
@@ -50,8 +46,9 @@ call system_clock ( t1, clock_rate, clock_max )
 ! Write contents of parameter array into sim_parameter type (handy usage)
 call initialize_parameters(params)
 
-! initialize particles
+! initialize all particles
 call init_particles(sstate,params,ll,lc)
+
 
 ! initialize linked lists
 call init_ll(sstate,ll)
@@ -66,7 +63,7 @@ call setup_neighbour_list(sstate, params, ll,lc)
 ! First integration
 print *, "Calculating Step ", 0
 call compute_accel(sstate, params, ll,lc)
-call leapfrog_start(sstate,params%dt)    ! for first iteration, we must use different leapfrog algorithm
+call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	       ! since we de not have any previous time step yet
 
 
@@ -81,7 +78,7 @@ do i = 1,nFrames
 
 	do j = 1,nSteps_per_frame
 		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
-		call leapfrog_step(sstate, params%dt) 		!update velocities and positions based on previously calculated accelleration
+		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
 	end do
 
 
