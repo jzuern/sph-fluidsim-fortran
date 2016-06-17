@@ -25,7 +25,7 @@ program sph
 
 integer																	:: nFrames 							! number of frames to calculate
 integer																	:: nSteps_per_frame     ! number of steps between shown frame
-integer 																:: i,j,k 								! loop iteration variables
+integer 																:: i,j  								! loop iteration variables
 integer, allocatable, dimension(:)  	  :: ll 									! linked list array
 integer, allocatable, dimension(:,:)  	:: lc 									! linked cell array
 type(systemstate)                 	    :: sstate								! Simulation state
@@ -40,7 +40,7 @@ call system_clock ( t1, clock_rate, clock_max )
 call initialize_parameters(params)
 
 ! initialize all particles
-call init_particles(sstate,params,ll,lc)
+call init_particles(sstate,params)
 
 
 ! initialize linked lists
@@ -66,22 +66,22 @@ nFrames 						= params%nFrames
 nSteps_per_frame 		= params%nSteps_per_frame
 
 
-do i = 1,nFrames
-	print *, "Calculating Step ", i, " of " , nFrames
-
-	do j = 1,nSteps_per_frame
-		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
-		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
-	end do
-
-
-  ! we can either plot data immediately (call plot_data_immediately(...) ) ...
-	! call plot_data_immediately(sstate,i)
-
-	!.. or we can first write the data to files and plot them later (in separate loop)
-	call write_data_to_file(sstate,i)
-
-end do
+! do i = 1,nFrames
+! 	print *, "Calculating Step ", i, " of " , nFrames
+!
+! 	do j = 1,nSteps_per_frame
+! 		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
+! 		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
+! 	end do
+!
+!
+!   ! we can either plot data immediately (call plot_data_immediately(...) ) ...
+! 	! call plot_data_immediately(sstate,i)
+!
+! 	!.. or we can first write the data to files and plot them later (in separate loop)
+! 	call write_data_to_file(sstate,i)
+!
+! end do
 
 
 !print out elapsed time:

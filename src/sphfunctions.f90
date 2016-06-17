@@ -45,15 +45,13 @@ contains
 
 
 
-  subroutine init_particles(sstate,params,ll,lc)
+  subroutine init_particles(sstate,params)
 
     ! initialize all particle positions
 
     use util
     type(systemstate)                           :: sstate !system state object
     type(sim_parameter)											    :: params
-    integer, allocatable, dimension(:)          :: ll
-    integer, allocatable, dimension(:,:)        :: lc
 
     call place_particles(sstate,params)
     call normalize_mass(sstate,params)
@@ -451,7 +449,7 @@ contains
 
     ! compute the acceleration of the particles due to external forces and
     ! collisions with one another
-    
+
     use util
     use linkedlists
 

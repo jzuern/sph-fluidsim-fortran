@@ -214,20 +214,6 @@ contains
     params%rcut_y = rcut_y
     params%dphi = dphi
 
-
-    ! print *, "  nframes =   " , nframes
-    ! print *, "  nSteps_per_frame =   " , nSteps_per_frame
-    ! print *, "  h =   " , h
-    ! print *, "  dt =   " , dt
-    ! print *, "  rho0 =   " , rho0
-    ! print *, "  k =   " , k
-    ! print *, "  mu =   " , mu
-    ! print *, "  g =   " , g
-    ! print *, "  rcut_x =   " , rcut_x
-    ! print *, "  rcut_y =   " , rcut_y
-    ! print *, "  dphi =   " , dphi
-
-
     print *, "...Parsing completed "
 
 
@@ -262,6 +248,7 @@ contains
 
 
     close(10)
+
   end subroutine
 
 
@@ -295,7 +282,7 @@ contains
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
       write ( 11,'(a,i2,a)') "set grid"
       write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
-      write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause of 0.1 s
+      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause of 0.1 s
       write ( 11,'(a,i2,a)') "q"
       close (11)
 
@@ -308,7 +295,7 @@ contains
   subroutine plot_data_immediately(sstate,i)
 
     ! plots data without saving to file
-    
+
     use gnufor2
 
     type(systemstate),intent(in)                :: sstate

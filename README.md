@@ -28,23 +28,27 @@ $ ./program sim_parameter.dat
 
 ## EXPLANATION
 
-This 2D SPH fluid simulation is loosely based on an [introductory paper](http://www.cs.cornell.edu/~bindel/class/cs5220-f11/code/sph.pdf) on this matter . I used the provided code fragments as an inspiration for my own implementation. Additionally I implemented a linked lists based approach in order to account for the quadratic time complexity when increasing the number of particles.
+This 2D SPH fluid simulation is loosely based on an [introductory paper](http://www.cs.cornell.edu/~bindel/class/cs5220-f11/code/sph.pdf) on this matter . I used the provided code fragments as an inspiration for my own implementation.
+
+Additionally, I implemented a linked lists based approach in order to account for the quadratic time complexity when increasing the number of particles.
+
+
+
+The simulation setup introduces a particle cloud (liquid blob) that is falling downwards due to gravitational forces. I also implemented a rotating structure (a watermill) in the center of the simulation domain. This structure causes the blob to disperse and break up.
+
+
 
 The code within the source files is structured in a way as to reflect its role in the simulation.
-Here is a list of the most important files and functions / subroutines:
+Below is a list of source files:
 
 - gnufor2.f90: interface to call for Gnuplot instance inside FORTRAN program
 - integrate.f90: implementation of the leapfrog integration method
-    ⋅⋅* leapfrog_start:
-    ⋅⋅* leapfrog_start:
 - linkedlist.f90: implementation of linked list bookkeeping routines
-    ⋅⋅* print_neighour_list: prints neighbor list to std out. For debugging purposes only
-    ⋅⋅* setup_neighbour_list: initializes and updates the field lc and vector ll that keep track of in which cells the particles sit
 - sphfunctions:f90: implementation of particle interaction routines
-    ⋅⋅*
 - util.f90: auxiliary functions with no other suitable place
-    ⋅⋅*
 - program.f90: main program which starts simulation
+
+Extensive code commentary should be enough to help understanding the tasks of each function and subroutine. 
 
 
 ## Visualization:
@@ -79,8 +83,8 @@ dphi=-0.001                 ! rotation speed of cross
 Create a sim_parameter.dat file in your working directory and copy those lines into it.
 (or use the provided file)
 
+[picture alt](http://www.brightlightpictures.com/assets/images/portfolio/thethaw_header.jpg)
+
+
 
 ## TODO
-
-- update and improve and elongate README.md
-- add images to README.md ?
