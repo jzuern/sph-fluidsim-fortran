@@ -48,7 +48,7 @@ Below is a list of source files:
 - util.f90: auxiliary functions with no other suitable place
 - program.f90: main program which starts simulation
 
-Extensive code commentary should be enough to help understanding the tasks of each function and subroutine. 
+Extensive code commentary should be enough to help understanding the tasks of each function and subroutine.
 
 
 ## Visualization:
@@ -83,8 +83,6 @@ dphi=-0.001                 ! rotation speed of cross
 Create a sim_parameter.dat file in your working directory and copy those lines into it.
 (or use the provided file)
 
-[picture alt](http://www.brightlightpictures.com/assets/images/portfolio/thethaw_header.jpg)
+![Screenshot](https://www.dropbox.com/s/om4umd7ymf7h70w/Screenshot%20from%202016-06-17%2009-12-35.png?dl=0 "Screenshot 1")
 
-
-
-## TODO
+![Screenshot](https://www.dropbox.com/s/12sw3b73b9bxuva/Screenshot%20from%202016-06-17%2009-12-11.png?dl=0 "Screenshot 2")

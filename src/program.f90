@@ -66,22 +66,22 @@ nFrames 						= params%nFrames
 nSteps_per_frame 		= params%nSteps_per_frame
 
 
-! do i = 1,nFrames
-! 	print *, "Calculating Step ", i, " of " , nFrames
-!
-! 	do j = 1,nSteps_per_frame
-! 		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
-! 		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
-! 	end do
-!
-!
-!   ! we can either plot data immediately (call plot_data_immediately(...) ) ...
-! 	! call plot_data_immediately(sstate,i)
-!
-! 	!.. or we can first write the data to files and plot them later (in separate loop)
-! 	call write_data_to_file(sstate,i)
-!
-! end do
+do i = 1,nFrames
+	print *, "Calculating Step ", i, " of " , nFrames
+
+	do j = 1,nSteps_per_frame
+		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
+		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
+	end do
+
+
+  ! we can plot data immediately (call plot_data_immediately(...) ) ...
+	! call plot_data_immediately(sstate,i)
+
+	!.. or we can first write the data to files and plot them later (in separate loop)
+	call write_data_to_file(sstate,i)
+
+end do
 
 
 !print out elapsed time:
