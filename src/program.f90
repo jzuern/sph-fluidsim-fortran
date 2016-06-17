@@ -30,18 +30,11 @@ integer, allocatable, dimension(:)  	  :: ll 									! linked list array
 integer, allocatable, dimension(:,:)  	:: lc 									! linked cell array
 type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
-double precision												:: dt 									! (constant) time step for numerical integration
+integer 																:: t1,t2, clock_rate, clock_max ! for time counting
 
-INTEGER 																:: t1,t2, clock_rate, clock_max ! for time counting
-
-
+! start counting of program runtime with intrinsic subroutine system_clock
 call system_clock ( t1, clock_rate, clock_max )
 
-
-
-
-! Parse input parameter file
-! call parse_input(simulation_parameter)
 
 ! Write contents of parameter array into sim_parameter type (handy usage)
 call initialize_parameters(params)
@@ -109,5 +102,5 @@ end do
 ! Cleanup
 call free_state(sstate)
 
-
+! end of program
 end program sph

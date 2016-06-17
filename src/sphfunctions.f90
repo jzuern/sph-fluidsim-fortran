@@ -11,24 +11,6 @@ implicit none
 contains
 
 
-  subroutine count_solid_particles(sstate,params)
-
-    use util
-    type(systemstate)                           :: sstate !system state object
-    type(sim_parameter)											    :: params
-    integer                                     :: particle = 1 ! particle iterator
-
-    double precision :: hh, x, y
-
-    hh = 0.5d0 * params%h
-
-
-
-
-
-  end subroutine
-
-
   subroutine update_solid_particles_positions(sstate,params)
 
     ! updates solid particles position solely based on passed time
@@ -36,16 +18,13 @@ contains
     use util
     type(systemstate)                           :: sstate !system state object
     type(sim_parameter)											    :: params
+    double precision, dimension(2)              :: center = (/0.5d0, 0.5d0/) ! rotation center
+    integer                                     :: particle
+    double precision                            :: phi,phi_new, radius,dist_x,dist_y
 
-    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center
+    do particle = 1 , sstate%nSolidParticles
 
-    integer :: particle
-
-    double precision :: phi,phi_new, radius,dist_x,dist_y
-
-    do particle = 1 , sstate%nSolidParticles ! start loop at first solid particle
-
-      ! convert positions from cartesian to polar coordinates
+      ! convert positions from cartesian to polar coordinates on order to make easy calculations of the new particle positions
       dist_x = sstate%x(2*particle-1) - center(1)
       dist_y = sstate%x(2*particle  ) - center(2)
 
@@ -68,6 +47,8 @@ contains
 
   subroutine init_particles(sstate,params,ll,lc)
 
+    ! initialize all particle positions
+
     use util
     type(systemstate)                           :: sstate !system state object
     type(sim_parameter)											    :: params
@@ -83,6 +64,9 @@ contains
 
 
   subroutine normalize_mass(sstate,params)
+
+    ! In the initial configuration, we want the fluid to have the reference density.
+    ! This is achieved by normalizing the total particle mass.
 
     use util
 
@@ -101,7 +85,6 @@ contains
     idxstart = sstate%nSolidParticles + 1
     idxend   = sstate%nParticles
 
-
     call compute_density_initially(sstate,params) ! initial density calculation
 
     ! calculate sum of liquid particle densities
@@ -119,6 +102,9 @@ contains
 
 
   subroutine compute_density_with_ll(sstate, params, ll, lc)
+
+    ! compute the density for each particle
+
     use util
     type (systemstate)                          :: sstate
     type(sim_parameter)											    :: params
@@ -213,6 +199,7 @@ contains
 
   subroutine compute_density_initially(sstate, params)
 
+
     use util
     type (systemstate)                       :: sstate
     type(sim_parameter)											 :: params
@@ -261,11 +248,11 @@ contains
 
   subroutine place_particles(sstate,params)
 
-    ! 1.0: we count solid particles
-    ! 1.1: we count liquid particles
-    ! 1.5: we allocate space accordingly
-    ! 2.0: we place solid particles
-    ! 2.1: we place liquid particles
+
+    ! place the particles in the simulation domain.
+    ! First, the number of particles based on their size and distance is determined.
+    ! Then, we allocate the required fields for their position, velocity, ...
+    ! After that we can actually save every initial particle position in those now allocated fields
 
 
     use util
@@ -278,12 +265,10 @@ contains
 
 
 
-    print *, " in place particles"
-
     h = params%h ! size of particles
 
-    hh_liquid = 1.0d0*h
-    hh_solid  = 1.0d0*h
+    hh_liquid = 1.1d0*h ! distance of liquid particles from one another in the initial configuration
+    hh_solid  = 0.5d0*h ! distance of solid particles from one another
 
 
     ! count solid particles
@@ -370,12 +355,13 @@ contains
     end do
 
 
-    print *, " out of place particles"
-
   end subroutine
 
 
   subroutine damp_reflect(i,which, barrier, sstate)
+
+    ! Auxiliary subroutine for the particle reflection that is called by reflect_bc()
+
     use util
     type (systemstate)  :: sstate
     integer             :: which,i
@@ -413,6 +399,11 @@ contains
 
 
     subroutine reflect_bc(sstate)
+
+
+      ! implementation of the reflection behavior on rigid boundaries
+
+
       use util
       type (systemstate) :: sstate
 
@@ -457,6 +448,10 @@ contains
 
 
   subroutine compute_accel(sstate,params,ll,lc)
+
+    ! compute the acceleration of the particles due to external forces and
+    ! collisions with one another
+    
     use util
     use linkedlists
 

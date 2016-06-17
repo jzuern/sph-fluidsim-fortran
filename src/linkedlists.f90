@@ -89,6 +89,10 @@ contains
 
   subroutine init_ll(sstate, ll)
 
+
+    ! Initialize the linked list that keeps track of which particles sit in the same
+    ! cell as the current particle
+
     use util
     type(systemstate)                     :: sstate
     integer, allocatable, dimension(:)    :: ll
@@ -101,6 +105,10 @@ contains
 
 
   subroutine init_lc(sstate, params, lc)
+
+    ! Initialize the field lc that contains the number of the first particle
+    ! in a cell
+
     use util
     type(systemstate)                        :: sstate
     type(sim_parameter)									  	 :: params

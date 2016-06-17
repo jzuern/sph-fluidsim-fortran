@@ -173,7 +173,7 @@ contains
 
   subroutine initialize_parameters (params)
 
-    ! reads sim_parameter.dat file and saves
+    ! reads sim_parameter.dat file using the FORTRAN namelist feature
 
     implicit none
     type(sim_parameter)                        :: params
@@ -236,7 +236,7 @@ contains
 
   subroutine write_data_to_file(sstate,i)
 
-    ! writes plotting data for each frame to files
+    ! writes particle data for each frame to files
 
     type(systemstate),intent(in)                :: sstate
     integer                                     :: n,i,k
@@ -267,7 +267,7 @@ contains
 
   subroutine plot_data_from_file(sstate,i)
 
-      ! plots data from files
+      ! plots particles from particle data files
 
       use gnufor2
       type(systemstate),intent(in)                :: sstate
@@ -307,7 +307,8 @@ contains
 
   subroutine plot_data_immediately(sstate,i)
 
-    ! plots data without saving to file by using gnufor2 library for plotting
+    ! plots data without saving to file
+    
     use gnufor2
 
     type(systemstate),intent(in)                :: sstate
