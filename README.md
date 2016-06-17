@@ -83,5 +83,4 @@ dphi=-0.001                 ! rotation speed of cross
 Create a sim_parameter.dat file in your working directory and copy those lines into it.
 (or use the provided file)
 
-![Alt text](http:///home/jzuern/Dropbox/develop/Fortran/sph-fluidsim/data/images/1.png "Screenshot 1")
-![Alt text](http:///home/jzuern/Dropbox/develop/Fortran/sph-fluidsim/data/images/1.png "Screenshot 2")
+![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/1.png)
