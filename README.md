@@ -83,6 +83,6 @@ dphi=-0.001                 ! rotation speed of cross
 Create a sim_parameter.dat file in your working directory and copy those lines into it.
 (or use the provided file)
 
-![Screenshot](https://www.dropbox.com/s/om4umd7ymf7h70w/Screenshot%20from%202016-06-17%2009-12-35.png?dl=0 "Screenshot 1")
+![Screenshot](https://www.dropbox.com/s/om4umd7ymf7h70w/Screenshot%20from%202016-06-17%2009-12-35.png "Screenshot 1")
 
-![Screenshot](https://www.dropbox.com/s/12sw3b73b9bxuva/Screenshot%20from%202016-06-17%2009-12-11.png?dl=0 "Screenshot 2")
+![Screenshot](https://www.dropbox.com/s/12sw3b73b9bxuva/Screenshot%20from%202016-06-17%2009-12-11.png "Screenshot 2")
