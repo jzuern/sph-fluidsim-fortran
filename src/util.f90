@@ -46,7 +46,9 @@ implicit none
      double precision :: g                  ! gravity strength Default: 9.81
      double precision :: rcut_x             ! Cutoff radius in x-direction for cells (as fraction of total size of simulation grid)
      double precision :: rcut_y             ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
-     double precision :: dphi               ! rotation speed of cross
+     logical          :: mill               ! Decide whether a watermill is in the computational domain or not
+     double precision :: dphi               ! rotation speed of watermill
+
 
   end type sim_parameter
 
@@ -55,12 +57,13 @@ implicit none
 contains
 
 
-  function cross_indicator (x,y) result(res)
+  function cross_indicator (x,y,params) result(res)
 
     !indicates whether point (x,y) lies within a cross (res == 1) or not (res == 0)
 
     implicit none
 
+    type(sim_parameter)             :: params
     double precision,intent(in)     :: x,y
     logical                         :: tmp,b1,b2
     integer                         :: res
@@ -70,19 +73,24 @@ contains
     double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center
 
 
-    res = 0
 
-    ! check wheter x and y coordinates lay within domain of cross
-    b1 = ( ABS(x - center(1)) < diameter/2  ) .AND. ( ABS(y - center(2)) < thickness/2  )
-    b2 = ( ABS(y - center(2)) < diameter/2  ) .AND. ( ABS(x - center(1)) < thickness/2  )
+    if(params%mill) then
 
-    if (b1 .OR. b2) THEN
-      res = 1
+      res = 0
+
+      ! check wheter x and y coordinates lay within domain of cross
+      b1 = ( ABS(x - center(1)) < diameter/2  ) .AND. ( ABS(y - center(2)) < thickness/2  )
+      b2 = ( ABS(y - center(2)) < diameter/2  ) .AND. ( ABS(x - center(1)) < thickness/2  )
+
+      if (b1 .OR. b2) THEN
+        res = 1
+      end if
+
+    else
+      res = 0
     end if
 
   end function
-
-
 
 
 
@@ -116,12 +124,12 @@ contains
     integer                         :: res
     double precision                :: dx,dy,r2
 
-    dx = x-0.5d0
-    dy = y-0.5d0
+    dx = x-0.8d0
+    dy = y-0.8d0
     r2 = dx*dx + dy*dy
     res = 0
 
-    tmp = (r2 > 0.2d0*0.2d0) .AND. (r2 < 0.6d0*0.6d0)
+    tmp = (r2 > 0.0d0*0.0d0) .AND. (r2 < 0.2d0*0.2d0)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -189,10 +197,11 @@ contains
     double precision :: g
     double precision :: rcut_x
     double precision :: rcut_y
+    logical          :: mill
     double precision :: dphi
 
 
-    namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut_x,rcut_y,dphi
+    namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut_x,rcut_y,mill,dphi
 
     CALL get_command_argument(1, inputfile)
     print *, "Parsing file ", inputfile
@@ -212,6 +221,7 @@ contains
     params%g = g
     params%rcut_x = rcut_x
     params%rcut_y = rcut_y
+    params%mill   = mill
     params%dphi = dphi
 
     print *, "...Parsing completed "
@@ -281,8 +291,8 @@ contains
       write ( 11,'(a,i2,a)') "set xrange [0:1]"
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
       write ( 11,'(a,i2,a)') "set grid"
-      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 65 linecolor rgb "blue" linewidth 1'
-      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause of 0.1 s
+      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 7 linecolor rgb "blue" linewidth 1'
+      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause
       write ( 11,'(a,i2,a)') "q"
       close (11)
 

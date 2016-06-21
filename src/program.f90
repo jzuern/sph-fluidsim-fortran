@@ -54,7 +54,7 @@ call setup_neighbour_list(sstate, params, ll,lc)
 ! call print_neighour_list(sstate, params, ll,lc) ! for debugging
 
 ! First integration
-print *, "Calculating Step ", 0
+print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	       ! since we de not have any previous time step yet
@@ -67,7 +67,7 @@ nSteps_per_frame 		= params%nSteps_per_frame
 
 
 do i = 1,nFrames
-	print *, "Calculating Step ", i, " of " , nFrames
+	print *, "Calculating frame ", i, " of " , nFrames
 
 	do j = 1,nSteps_per_frame
 		call compute_accel(sstate, params,ll,lc)  !update values for accellerations

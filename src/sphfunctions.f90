@@ -70,11 +70,9 @@ contains
 
     type (systemstate)                          :: sstate
     type(sim_parameter)											    :: params
-    integer, allocatable, dimension(:)          :: ll
-    integer, allocatable, dimension(:,:)        :: lc
     double precision                            :: rho0
     double precision                            :: rho2s,rhos
-    integer                                     :: i, idxstart, idxend
+    integer                                     :: idxstart, idxend
 
     rho0 = params%rho0
 
@@ -111,11 +109,11 @@ contains
     integer, dimension(4)                       :: ndx,ndy,ndz
     integer, dimension(2)                       :: nmax
 
-    integer              :: nx ,ny, nz
+    integer              :: nx ,ny
     integer              :: n1,n2,no
     integer              :: i,j
     double precision     :: mass,h,h2,h8,C
-    double precision     :: dx,dy,dz,r2,z, rho_ij
+    double precision     :: dx,dy,r2,z, rho_ij
     ! integer :: n
 
     h = params%h
@@ -265,22 +263,27 @@ contains
 
     h = params%h ! size of particles
 
-    hh_liquid = 1.1d0*h ! distance of liquid particles from one another in the initial configuration
+    hh_liquid = 1.0d0*h ! distance of liquid particles from one another in the initial configuration
     hh_solid  = 0.5d0*h ! distance of solid particles from one another
 
+    if (params%mill) THEN
 
-    ! count solid particles
-    x = 0.d0
-    do while (x < 1.d0)
-      y = 0.d0
-      do while (y < 1.d0)
-        if (cross_indicator(x,y) /= 0) THEN
-          nSolidParticles = nSolidParticles + 1
-        end if
-        y = y + hh_solid
+      ! count solid particles
+      x = 0.d0
+      do while (x < 1.d0)
+        y = 0.d0
+        do while (y < 1.d0)
+          if (cross_indicator(x,y,params) /= 0) THEN
+            nSolidParticles = nSolidParticles + 1
+          end if
+          y = y + hh_solid
+        end do
+        x = x + hh_solid
       end do
-      x = x + hh_solid
-    end do
+
+
+    end if
+
 
     sstate%nSolidParticles = nSolidParticles;
 
@@ -289,7 +292,7 @@ contains
     do while (x < 1.d0)
       y = 0.d0
       do while (y < 1.d0)
-        if (box_indicator(x,y) /= 0 .AND. cross_indicator(x,y) == 0) THEN
+        if (circ_indicator(x,y) /= 0 .AND. cross_indicator(x,y,params) == 0) THEN
           nLiquidParticles = nLiquidParticles + 1
         end if
         y = y + hh_liquid
@@ -310,20 +313,24 @@ contains
 
     solidParticle = 1 ! current particle
 
+    if (params%mill) THEN
+
     ! place solid particles
-    x = 0.d0
-    do while (x < 1.d0)
-      y = 0.d0
-      do while (y < 1.d0)
-        if (cross_indicator(x,y) /= 0) THEN
-          sstate%x(2*solidParticle-1) = x
-          sstate%x(2*solidParticle-0) = y
-          solidParticle = solidParticle + 1
-        end if
-        y = y + hh_solid
+      x = 0.d0
+      do while (x < 1.d0)
+        y = 0.d0
+        do while (y < 1.d0)
+          if (cross_indicator(x,y,params) /= 0) THEN
+            sstate%x(2*solidParticle-1) = x
+            sstate%x(2*solidParticle-0) = y
+            solidParticle = solidParticle + 1
+          end if
+          y = y + hh_solid
+        end do
+        x = x + hh_solid
       end do
-      x = x + hh_solid
-    end do
+
+    end if
 
 
     liquidParticle = sstate%nSolidParticles + 1 ! current particle
@@ -334,7 +341,7 @@ contains
       y = 0.d0
       do while (y < 1.d0)
 
-        if (box_indicator(x,y) /= 0 .AND. cross_indicator(x,y) == 0) THEN
+        if (circ_indicator(x,y) /= 0 .AND. cross_indicator(x,y,params) == 0) THEN
           CALL RANDOM_NUMBER(rd)   ! random number between 0 and 1
 
           ! add some random noise to particle positions in order to prevent any
@@ -530,11 +537,25 @@ contains
                 dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
                 dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
 
-                ! update velocities according to collision details
-                sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
-                sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
-                sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
-                sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+                ! ! update velocities according to collision details
+                ! sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
+                ! sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                ! sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
+                ! sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+
+
+                ! test if particle n1 is actually liquid particle.
+                ! Then we can update acceleration accordingly
+                if ( n1 > sstate%nSolidParticles) THEN
+                  sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
+                  sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                end if
+                if (n2 > sstate%nSolidParticles) THEN
+                  sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
+                  sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+                end if
+
+
               end if
               n2 = ll(n2)
             end do

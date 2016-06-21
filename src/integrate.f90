@@ -31,7 +31,10 @@ module integrate
     state%v(startidx:endidx)  = state%v(startidx:endidx)  + (state%a(startidx:endidx)   * dt  )
     state%x(startidx:endidx)  = state%x(startidx:endidx)  + (state%vh(startidx:endidx)  * dt  )
 
-    call update_solid_particles_positions(state,params)
+    if (params%mill) then
+      call update_solid_particles_positions(state,params)
+    end if
+
     call reflect_bc(state)
 
     return
@@ -57,7 +60,10 @@ module integrate
     state%v(startidx:endidx)  = state%vh(startidx:endidx) + state%a(startidx:endidx) * dt/2
     state%x(startidx:endidx)  = state%x(startidx:endidx)  + state%vh(startidx:endidx)* dt
 
-    call update_solid_particles_positions(state,params)
+    if (params%mill) then
+      call update_solid_particles_positions(state,params)
+    end if
+
     call reflect_bc(state)
 
     return
