@@ -66,17 +66,18 @@ This file is read using FORTRAN's namelist routine
 Exemplary parameters for water-like behavior are:
 ```
 &SIMPARAMETER
-nframes=200                 ! Number of frames
-nSteps_per_frame=50         ! Number of steps per frame. Default: 100
-h=0.01                      ! Size of particles (radius). Also: Distance of particles in initial configuration
-dt=0.0001                   ! Time step size Default: 1E-4
-rho0=1000.0                 ! Reference density Default: 1000
-k=10000.0                   ! Bulk modulus Default: 1E5
-mu=1.0                      ! Viscosity Default: 1.0
-g=9.81                      ! gravity strength Default: 9.81
-rcut_x=0.1                  ! Cutoff radius in x-direction for cells (as fraction of total size of simulation grid)
-rcut_y=0.1                  ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
-dphi=-0.001                 ! rotation speed of cross
+nframes=100                ! Number of frames
+nSteps_per_frame=100       ! Number of steps per frame
+h=0.010                    ! Size of particles (radius)
+dt=0.0001                  ! Time step size
+rho0=1000.0                ! Reference density
+k=1000000.0                ! Bulk modulus
+mu=0.1                     ! Viscosity
+g=9.81                     ! gravity strength
+rcut_x=0.1                 ! cell cutoff radius in x-direction (as fraction of total size of simulation grid)
+rcut_y=0.1                 ! cell cutoff radius in y-direction (as fraction of total size of simulation grid)
+mill=.FALSE.               ! Decide whether a watermill is in the computational domain or not
+dphi=-0.0003               ! rotation speed of watermill (only applicable if mill == .true.)
 /
 
 ```
