@@ -65,7 +65,7 @@ contains
 
     type(sim_parameter)             :: params
     double precision,intent(in)     :: x,y
-    logical                         :: tmp,b1,b2
+    logical                         :: b1,b2
     integer                         :: res
 
     double precision :: diameter  = 0.7d0  ! diameter of rotating cross
@@ -103,9 +103,15 @@ contains
     double precision,intent(in)     :: x,y
     logical                         :: tmp
     integer                         :: res
+    double precision                :: xmin,xmax,ymin,ymax
+
+    xmin = 0.5d0
+    xmax = 1.0d0
+    ymin = 0.8d0
+    ymax = 1.0d0
 
     res = 0
-    tmp = (x < 1.0d0) .AND. (x > 0.5d0) .AND. (y > 0.8d0) .AND. (y < 1.0d0)
+    tmp = (x < xmax) .AND. (x > xmin) .AND. (y > ymin) .AND. (y < ymax)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -122,14 +128,20 @@ contains
     double precision, intent(in)    :: x,y
     logical                         :: tmp
     integer                         :: res
-    double precision                :: dx,dy,r2
+    double precision                :: dx,dy,r2,x_offset,y_offset,rmin,rmax
 
-    dx = x-0.8d0
-    dy = y-0.8d0
+    x_offset = 0.3d0 ! x-coordinates of blob center
+    y_offset = 0.3d0 ! y-coordinates of blob center
+
+    rmin = 0.0d0 ! inner radius of circular blob
+    rmax = 0.2d0 ! outer radius of circular blob
+
+    dx = x - x_offset
+    dy = y - y_offset
     r2 = dx*dx + dy*dy
     res = 0
 
-    tmp = (r2 > 0.0d0*0.0d0) .AND. (r2 < 0.2d0*0.2d0)
+    tmp = (r2 > rmin*rmin) .AND. (r2 < rmax*rmax)
     if (tmp .eqv. .true.) THEN
       res = 1
     end if
@@ -143,7 +155,6 @@ contains
 
     type(systemstate)                       :: state !system state object
     type(sim_parameter)											:: params!simulation parameter object
-    double precision                        :: rho0
 
     ! allocate all arrays
     allocate(state%x   (2*state%nParticles))
@@ -274,7 +285,6 @@ contains
       character(len=100) :: commandfile
       character(len=5)   :: dummy
       character(len=8)   :: fmt ! format descriptor
-      character(len=100) :: line1,line2
 
 
       fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left

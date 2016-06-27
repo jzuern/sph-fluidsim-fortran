@@ -52,7 +52,7 @@ contains
 
   subroutine print_neighour_list(sstate, params, ll,lc)
 
-    ! print neighbor list for debugging purposes
+    ! print neighbor list (for debugging purposes)
 
     use util
     type(systemstate)              :: sstate
@@ -114,10 +114,6 @@ contains
     type(sim_parameter)									  	 :: params
     integer, allocatable, dimension(:,:)     :: lc
     integer, dimension(2)                    :: nmax
-    integer                                  :: i,j
-    integer                                  :: ntot
-
-    ntot = sstate%nParticles
 
     nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension

@@ -106,21 +106,18 @@ contains
     type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:)        :: lc
-    integer, dimension(4)                       :: ndx,ndy,ndz
+    integer, dimension(4)                       :: ndx,ndy
     integer, dimension(2)                       :: nmax
 
     integer              :: nx ,ny
     integer              :: n1,n2,no
     integer              :: i,j
-    double precision     :: mass,h,h2,h8,C
-    double precision     :: dx,dy,r2,z, rho_ij
-    ! integer :: n
+    double precision     :: mass,h,h2,h8,C,dx,dy,r2,z, rho_ij
 
     h = params%h
     h2 = h*h
     h8 = h2*h2*h2*h2
 
-    ! n          = sstate%nParticles
     mass       = sstate%mass
 
     C = mass / pi / h8;
@@ -201,10 +198,8 @@ contains
     type(sim_parameter)											 :: params
     integer, dimension(4)                    :: ndx,ndy
     integer, dimension(2)                    :: nmax
-    integer                                  :: n
-    integer                                  :: i,j
-    double precision                         :: mass,h,h2,h8,C
-    double precision                         :: dx,dy,r2,z, rho_ij
+    integer                                  :: n,i,j
+    double precision                         :: mass,h,h2,h8,C,dx,dy,r2,z, rho_ij
 
     h = params%h
     h2 = h*h
@@ -264,7 +259,7 @@ contains
     h = params%h ! size of particles
 
     hh_liquid = 1.0d0*h ! distance of liquid particles from one another in the initial configuration
-    hh_solid  = 0.5d0*h ! distance of solid particles from one another
+    hh_solid  = 1.0d0*h ! distance of solid particles from one another
 
     if (params%mill) THEN
 
