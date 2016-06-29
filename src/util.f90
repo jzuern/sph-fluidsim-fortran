@@ -247,7 +247,7 @@ contains
 
     type(systemstate),intent(in)                :: sstate
     integer                                     :: n,i,k
-    double precision, allocatable, dimension(:) :: x,y
+    double precision, allocatable, dimension(:) :: x,y,rho
     character(len=100) :: filename
     character(len=5)   :: dummy
     character(len=8)   :: fmt ! format descriptor
@@ -261,10 +261,12 @@ contains
     n = sstate%nParticles
     x = sstate%x(1:2*n:2)
     y = sstate%x(2:2*n:2)
+    rho = sstate%rho(1:n:1)
+
 
     ! writes particle positions into file
     do k = 1,n
-      write (10,*) x(k),y(k)
+      write (10,*) x(k),y(k),rho(k)
     end do
 
 
@@ -300,9 +302,9 @@ contains
       write ( 11,'(a,i2,a)') "unset key"
       write ( 11,'(a,i2,a)') "set xrange [0:1]"
       write ( 11,'(a,i2,a)') "set yrange [0:1]"
-      write ( 11,'(a,i2,a)') "set grid"
-      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" using 1:2 with points pointtype 7 linecolor rgb "blue" linewidth 1'
-      write ( 11,'(a,i2,a)') "pause 0.100E+00" ! pause
+      write ( 11,'(a,i2,a)') "unset grid"
+      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" u 1:2:3 with points palette pointtype 7 ps 1.5'
+      write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause
       write ( 11,'(a,i2,a)') "q"
       close (11)
 
@@ -314,7 +316,7 @@ contains
 
   subroutine plot_data_immediately(sstate,i)
 
-    ! plots data without saving to file
+    ! plots data without saving to file (for debugging / quick glance at results)
 
     use gnufor2
 
@@ -335,7 +337,7 @@ contains
     file='data/frame'//trim(dummy)//'.dat' ! concatenating stuff to create file name
 
     ! actual plotting command:
-    call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 800,800", filename = file)
+    call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 1000,1000", filename = file)
 
   end subroutine
 

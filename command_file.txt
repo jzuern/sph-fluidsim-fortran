@@ -2,7 +2,7 @@ set terminal  x11 size 1000,1000
 unset key
 set xrange [0:1]
 set yrange [0:1]
-set grid
-plot "data/frame00100.dat" using 1:2 with points pointtype 7 linecolor rgb "blue" linewidth 1
+unset grid
+plot "data/frame00100.dat" u 1:2:3 with points palette pointtype 7 ps 1.5
 pause 0.100E+00
 q
