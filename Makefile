@@ -2,17 +2,17 @@
 FC = f95
 
 # flags for debugging or for maximum performance, comment as necessary
-FCFLAGS = -g -fbounds-check -Wall
+FCFLAGS = -g -fbounds-check
 
 # flags forall (e.g. look for system .mod files, required in gfortran)
-# FCFLAGS += -I/usr/lib
+# FCFLAGS +=
 
 # path to src files
 SOURCEPATH = src
 
 
-# libraries needed for linking: openMP
-LDFLAGS =-fopenmp
+# libraries needed for linking: openMP, fortranposix, gnuplotfortran
+LDFLAGS =-fopenmp -lfortranposix -lgnuplotfortran
 
 # List of executables to be built within the package
 PROGRAMS = program

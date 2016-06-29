@@ -13,6 +13,11 @@ program sph
 	use linkedlists   !Module: Linked lists mechanics and bookkeeping
 	use util          !Module: utiliary functions
 
+
+
+
+
+
 	implicit none
 
 
@@ -31,6 +36,11 @@ integer, allocatable, dimension(:,:)  	:: lc 									! linked cell array
 type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 integer 																:: t1,t2, clock_rate, clock_max ! for time counting
+
+
+
+
+
 
 ! start counting of program runtime with intrinsic subroutine system_clock
 call system_clock ( t1, clock_rate, clock_max )
@@ -59,6 +69,9 @@ call compute_accel(sstate, params, ll,lc)
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	       ! since we de not have any previous time step yet
 
+!invoke gnuplot session
+call invoke_gnuplot()
+
 
 
 ! Simulation loop
@@ -76,10 +89,10 @@ do i = 1,nFrames
 
 
   ! we can plot data immediately (call plot_data_immediately(...) ) ...
-	! call plot_data_immediately(sstate,i)
+	call plot_data_immediately(sstate,i)
 
 	!.. or we can first write the data to files and plot them later (in separate loop)
-	call write_data_to_file(sstate,i)
+	! call write_data_to_file(sstate,i)
 
 end do
 
@@ -94,9 +107,9 @@ print *, "Press any key to start plotting"
 read(*,*)
 
 ! this is the plotting loop (if some data exists in folder)
-do i = 1,nFrames
-	call plot_data_from_file(sstate,i)
-end do
+! do i = 1,nFrames
+! 	call plot_data_from_file(sstate,i)
+! end do
 
 
 ! Cleanup
