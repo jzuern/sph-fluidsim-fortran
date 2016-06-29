@@ -8,6 +8,13 @@ Fortran 2D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with
 We need openMP to be installed on the system in order to link to the openMP libraries.
 If you do not wish to parallelize, simply remove the `-lopenmp` linker flag.
 
+We use [gnuplotfortran](http://gnuplotfortran.sourceforge.net/) to invoke a [Gnuplot](http://www.gnuplot.info/) session from within Fortran.
+Installation guidelines for these libraries can be found on the respective websites.
+
+You can link to the gnuplotfortran libraries either by adding the `.so` files to your `LD_LIBRARY_PATH` or by copying the  `.so` and  `.mod` fles into the project folder.
+
+The linker flags for gnuplotfortran are `-lfortranposix` and `-lgnuplotfortran`.
+
 ## BUILD
 
 
