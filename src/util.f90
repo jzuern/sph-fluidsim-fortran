@@ -279,181 +279,114 @@ contains
   end subroutine
 
 
+  !
+  ! subroutine plot_data_from_file(sstate,i)
+  !
+  !     ! plots particles from particle data files
+  !
+  !     use gnufor2
+  !     type(systemstate),intent(in)                :: sstate
+  !     integer                                     :: i
+  !
+  !     character(len=100) :: datafile
+  !     character(len=100) :: commandfile
+  !     character(len=5)   :: dummy
+  !     character(len=8)   :: fmt ! format descriptor
+  !
+  !
+  !     fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+  !     write (dummy,fmt) i ! converting integer to string using a 'internal file'
+  !     datafile = "data/frame" // trim(dummy) // ".dat"
+  !
+  !     !writing command file (here we specify the command file, from where gnuplot will
+  !     !                      get all the info about plotting specifications)
+  !     commandfile = "command_file.txt"
+  !
+  !     open (unit=11, file=commandfile, status="replace")
+  !     write ( 11,'(a,i2,a)') "set terminal  x11 size 1000,1000"
+  !     write ( 11,'(a,i2,a)') "unset key"
+  !     write ( 11,'(a,i2,a)') "set xrange [0:1]"
+  !     write ( 11,'(a,i2,a)') "set yrange [0:1]"
+  !     write ( 11,'(a,i2,a)') "unset grid"
+  !     write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" u 1:2:3 with points palette pointtype 7 ps 1.5'
+  !     write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause
+  !     write ( 11,'(a,i2,a)') "q"
+  !     close (11)
+  !
+  !     !calling gnuplot
+  !     call run_gnuplot (commandfile)
+  !
+  ! end subroutine
 
 
-  subroutine plot_data_from_file(sstate,i)
-
-      ! plots particles from particle data files
-
-      use gnufor2
-      type(systemstate),intent(in)                :: sstate
-      integer                                     :: i
-
-      character(len=100) :: datafile
-      character(len=100) :: commandfile
-      character(len=5)   :: dummy
-      character(len=8)   :: fmt ! format descriptor
-
-
-      fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
-      write (dummy,fmt) i ! converting integer to string using a 'internal file'
-      datafile = "data/frame" // trim(dummy) // ".dat"
-
-      !writing command file (here we specify the command file, from where gnuplot will
-      !                      get all the info about plotting specifications)
-      commandfile = "command_file.txt"
-
-      open (unit=11, file=commandfile, status="replace")
-      write ( 11,'(a,i2,a)') "set terminal  x11 size 1000,1000"
-      write ( 11,'(a,i2,a)') "unset key"
-      write ( 11,'(a,i2,a)') "set xrange [0:1]"
-      write ( 11,'(a,i2,a)') "set yrange [0:1]"
-      write ( 11,'(a,i2,a)') "unset grid"
-      write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" u 1:2:3 with points palette pointtype 7 ps 1.5'
-      write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause
-      write ( 11,'(a,i2,a)') "q"
-      close (11)
-
-      !calling gnuplot
-      call run_gnuplot (commandfile)
-
-  end subroutine
-
-
-  subroutine plot_data_immediately(sstate,i)
+  subroutine plot_data_immediately(sstate,i,ptr_gctrl)
 
     ! plots data without saving to file (for debugging / quick glance at results)
-    !
-    ! use gnufor2
-    !
-    ! type(systemstate),intent(in)                :: sstate
-    ! integer                                     :: n,i
-    ! double precision, allocatable, dimension(:) :: x,y
-    !
-    ! character(len=100) :: file
-    ! character(len=5)   :: dummy
-    ! character(len=8)   :: fmt ! format descriptor
-    !
-    ! n = sstate%nParticles
-    ! x = sstate%x(1:2*n:2)
-    ! y = sstate%x(2:2*n:2)
-    !
-    ! fmt = '(I5.5)'                         ! an integer of width 5 with zeros at the left
-    ! write (dummy,fmt) i                    ! converting integer to string using a 'internal file'
-    ! file='data/frame'//trim(dummy)//'.dat' ! concatenating stuff to create file name
-    !
-    ! ! actual plotting command:
-    ! call plot(x,y," 5.",pause=0.5, persist = "yes", terminal=" x11 size 1000,1000", filename = file)
+
+    ! Attention: only works for the first 64 frames since the gnuplotfortran library
+    !            for plotting only allows for 64 temp files to exist at the same time
 
 
-    
+    use datatypes, only : i4b,dp
+    use gnuplot_module_data, only : gnuplot_ctrl
+    use gnuplot_module
+
+
+    type(systemstate),intent(in)                :: sstate
+    integer :: i
+    type(gnuplot_ctrl), pointer :: ptr_gctrl
+    integer(i4b) :: status
+    integer(i4b) :: n
+
+    n = sstate%nParticles
+
+    status = gnuplot_resetsession(ptr_gctrl)
+    print *, status
+    status = gnuplot_plot2d(ptr_gctrl,n,sstate%x(1:2*n:2),sstate%x(2:2*n:2),'particles')
+
+
+
 
   end subroutine
 
 
+  subroutine invoke_gnuplot(ptr_gctrl)
 
-    subroutine invoke_gnuplot()
+            use datatypes, only : i4b,dp,lgc
+            use gnuplot_module_data, only : PI_D,gnuplot_ctrl,GNUPLOT_SHOWDEBUG,GNUPLOT_SHOWWARNINGS,GP_CMD_SIZE
+            use gnuplot_module
 
+            integer(i4b), external :: fortran_getchar
 
-        use datatypes, only : i4b,dp,lgc
-        use gnuplot_module_data, only : PI_D,gnuplot_ctrl,GNUPLOT_SHOWDEBUG,GNUPLOT_SHOWWARNINGS,GP_CMD_SIZE
-        use gnuplot_module
+            integer(i4b) :: numpoints=50,ii=0
+            integer(i4b) :: status=0
+            type(gnuplot_ctrl), pointer :: ptr_gctrl
 
+            character(len=1) :: debug
 
+            ! disable Gnuoplot warnings
+            GNUPLOT_SHOWWARNINGS=.false.
 
+            ! invokng gnuplot session
+            ptr_gctrl=>gnuplot_init('-persist')
+            if(.not.associated(ptr_gctrl)) stop 'Failed : to initiate a gnuplot session'
 
+            print*, 'Press Enter to continue ...'
 
-        integer(i4b), external :: fortran_getchar
+            status=fortran_getchar(debug)
 
-        integer(i4b) :: numpoints=50,ii=0,jj=0
-        integer(i4b) :: status=0,ierror=0
-        type(gnuplot_ctrl), pointer :: ptr_gctrl
-
-        real(dp), dimension(:), allocatable :: x,y1
-
-        character(len=1), dimension(2) :: vialist1=(/'a','b'/)
-        real(dp), dimension(2) :: paraminit1=(/1.2,1.3/)
-        character(len=1), dimension(3) :: vialist2=(/'a','b','c'/)
-        real(dp), dimension(3) :: paraminit2=(/1.2,1.3,1.5/)
-
-        character(len=1) :: debug
-        character(len=GP_CMD_SIZE) :: cmd
-
-        allocate(x(numpoints), stat=status)
-        if(status.ne.0) stop 'Failed to allocate memory for x in gnuplot_fortran95_testbench'
-
-        allocate(y1(numpoints), stat=status)
-        if(status.ne.0) stop 'Failed to allocate memory for x in gnuplot_fortran95_testbench'
-
-        definepoints : do ii=1,numpoints
-        	 x(ii)=(real(ii-1)/real(numpoints-1))*2.0_dp*PI_D
-        	 y1(ii)=2.0*sin(10.0_dp*x(ii))
-        end do definepoints
+            status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,1.0_dp)
+            status=gnuplot_setrange(ptr_gctrl,'y',0.0_dp,1.0_dp)
+            status=gnuplot_settitle(ptr_gctrl,'Particle visualization')
+            status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
+            status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
+            status=gnuplot_setscale(ptr_gctrl,'x','NLG')
+            status=gnuplot_setscale(ptr_gctrl,'y','NLG')
+            status=gnuplot_setstyle(ptr_gctrl,'points with pointtype 7')
 
 
 
-        write(*,'(A)',advance='no') "Do you wish to see the actual gnuplot commands issued as testbench proceeds (y/n) ? "
-        read(*,'(a1)') debug
-
-
-        if(debug.eq.'y') then
-        	 GNUPLOT_SHOWDEBUG=.true.
-        else
-        	 GNUPLOT_SHOWDEBUG=.false.
-        end if
-
-        print*, 'Disabling warnings for this run ...'
-        GNUPLOT_SHOWWARNINGS=.false.
-
-
-
-        print*, 'Invoking gnuplot_init ...'
-        ptr_gctrl=>gnuplot_init('-persist')
-        if(.not.associated(ptr_gctrl)) stop 'Failed : to initiate a gnuplot session in gnuplot_fortran95_testbench'
-
-        print*, 'Press Enter to continue ...'
-
-        status=fortran_getchar(debug)
-
-        print*, 'Invoking gnuplot_setrange (s)'
-        status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,PI_D)
-        if(status.ne.0) stop 'Failed : to set plot xrange (2D) in gnuplot_fortran95_testbench'
-
-        status=gnuplot_setrange(ptr_gctrl,'y',-5.0_dp,5.0_dp)
-        if(status.ne.0) stop 'Failed : to set plot yrange (2D) in gnuplot_fortran95_testbench'
-
-        print*, 'Invoking gnuplot_settitle'
-        status=gnuplot_settitle(ptr_gctrl,'Testbench plot')
-        if(status.ne.0) stop 'Failed : to set plot title (2D) in gnuplot_fortran95_testbench'
-
-        print*, 'Invoking gnuplot_setlabel (s)'
-        status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
-        if(status.ne.0) stop 'Failed : to set plot xlabel (2D) in gnuplot_fortran95_testbench'
-
-        status=gnuplot_setaxislabel(ptr_gctrl,'y','sin,cos,atan,sqrt')
-        if(status.ne.0) stop 'Failed : to set plot ylabel (2D) in gnuplot_fortran95_testbench'
-
-        print*, 'Invoking gnuplot_setscale (s)'
-        status=gnuplot_setscale(ptr_gctrl,'x','NLG')
-        if(status.ne.0) stop 'Failed : to set plot xscale (2D) in gnuplot_fortran95_testbench'
-
-        status=gnuplot_setscale(ptr_gctrl,'y','NLG')
-        if(status.ne.0) stop 'Failed : to set plot yscale (2D) in gnuplot_fortran95_testbench'
-
-        print*, 'Invoking gnuplot_setstyle'
-        status=gnuplot_setstyle(ptr_gctrl,'linespoints')
-        if(status.ne.0) stop 'Failed : to set plot scales (2D) in gnuplot_fortran95_testbench'
-
-        print*, 'Invoking gnuplot_plot2d'
-        status=gnuplot_plot2d(ptr_gctrl,numpoints,x,y1,'sin(x)')
-        if(status.ne.0) stop 'Failed : to plot (2D) in gnuplot_fortran95_testbench'
-
-
-
-
-    end subroutine invoke_gnuplot
-
-
+      end subroutine invoke_gnuplot
 
 
 

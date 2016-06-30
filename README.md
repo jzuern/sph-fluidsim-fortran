@@ -27,10 +27,15 @@ $ make
 
 ## USAGE
 
-start the executable `program` with a simulation parameter file as the command line argument
+Start the simulation by executing `program` with a simulation parameter file as the command line argument
 i.e.:
 ```
 $ ./program sim_parameter.dat
+```
+
+After the simulation has ended you may plot the particle data in all its glory by running the bash script:
+```
+$ ./plotData.sh
 ```
 
 ## EXPLANATION
@@ -40,9 +45,7 @@ This 2D SPH fluid simulation is loosely based on an [introductory paper](http://
 Additionally, I implemented a linked lists based approach in order to account for the quadratic time complexity when increasing the number of particles.
 
 
-
 The simulation setup introduces a particle cloud (liquid blob) that is falling downwards due to gravitational forces. I also implemented a rotating structure (a watermill) in the center of the simulation domain. This structure causes the blob to disperse and break up.
-
 
 
 The code within the source files is structured in a way as to reflect its role in the simulation.
@@ -55,14 +58,21 @@ Below is a list of source files:
 - util.f90: auxiliary functions with no other suitable place
 - program.f90: main program which starts simulation
 
-Extensive code commentary should be enough to help understanding the tasks of each function and subroutine.
+Code commentary should be enough to help understanding the tasks of each function and subroutine.
+
+
+In order to plot the particle data that has been written to file, I suggest using the provided bash script ´plotData.sh´ which loads Gnuplot and plots the contents of the ´data´ folder. You might need to make the bash script executable by typing
+```
+$ chmod +x plotData.sh
+```
+
 
 
 ## Visualization:
 
-Gnuplot with [Fortran interface](http://www.math.yorku.ca/~akuznets/gnufor2/)
+[Gnuplotfortran](http://gnuplotfortran.sourceforge.net/) for on-line visualization of the particle cloud for debugging and quick observation purposes.
 
-I slightly edited the source file gnufor2.f90 in order to modify the Gnuplot visualizations.
+If you wish to visualize to data that has been written to file during the simulation, you may use the provided bash script ´plotData.sh´ to plot the particle data contained in those files.
 
 
 ## Simulation parameters:

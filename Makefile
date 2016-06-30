@@ -37,14 +37,14 @@ program:    gnufor2.o \
 # executable depends
 %: %.o
 	# $(FC) $(FCFLAGS) -o $@ $^
-	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS) #not original
+	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
 
 # General rules for building prog.o from prog.f90 or prog.F90; $< is
 # used in order to list only the first prerequisite (the source file)
 # and not the additional prerequisites such as module or include files
 %.o: $(SOURCEPATH)/%.f90
 	# $(FC) $(FCFLAGS) -c $<
-	$(FC) $(FCFLAGS) -c $< $(LDFLAGS) #not original
+	$(FC) $(FCFLAGS) -c $< $(LDFLAGS)
 
 # Utility targets
 .PHONY: clean veryclean

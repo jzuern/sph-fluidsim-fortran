@@ -6,17 +6,14 @@ program sph
 	!Last modified: 06/19/2016
 
 
-	use gnufor2       			!Module: gnuplot fortran visualizations
+	! use gnufor2       			!Module: gnuplot fortran visualizations
 
 	use integrate     !Module: definition of integration functions (leapfrog)
 	use sphfunctions  !Module: implementation of sph mechanics
 	use linkedlists   !Module: Linked lists mechanics and bookkeeping
 	use util          !Module: utiliary functions
 
-
-
-
-
+	use gnuplot_module_data, only : gnuplot_ctrl !gnuplotfortran visualizations
 
 	implicit none
 
@@ -37,9 +34,7 @@ type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 integer 																:: t1,t2, clock_rate, clock_max ! for time counting
 
-
-
-
+type(gnuplot_ctrl), pointer 						:: ptr_gctrl ! pointer to gnuplot control unit
 
 
 ! start counting of program runtime with intrinsic subroutine system_clock
@@ -70,29 +65,32 @@ call leapfrog_start(sstate,params)    ! for first iteration, we must use differe
 																	       ! since we de not have any previous time step yet
 
 !invoke gnuplot session
-call invoke_gnuplot()
+call invoke_gnuplot(ptr_gctrl)
 
 
 
-! Simulation loop
 nFrames 						= params%nFrames
 nSteps_per_frame 		= params%nSteps_per_frame
 
 
+! Loop through frames
 do i = 1,nFrames
 	print *, "Calculating frame ", i, " of " , nFrames
 
+	!Loop through steps for each frame
 	do j = 1,nSteps_per_frame
 		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
 		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
 	end do
 
 
-  ! we can plot data immediately (call plot_data_immediately(...) ) ...
-	call plot_data_immediately(sstate,i)
+  ! Plot data immediately
+	if (MODULO(i-1,10) == 0) THEN
+		 call plot_data_immediately(sstate,i,ptr_gctrl)
+	 end if
 
-	!.. or we can first write the data to files and plot them later (in separate loop)
-	! call write_data_to_file(sstate,i)
+	! Write data to file
+	call write_data_to_file(sstate,i)
 
 end do
 
@@ -101,15 +99,6 @@ end do
 call system_clock ( t2, clock_rate, clock_max )
 write ( *, * ) 'Elapsed time = ', real (t2-t1)/real(clock_rate), 'seconds, which is an average of ' &
 														 & ,  real (t2-t1)/real(clock_rate)/real(nFrames), ' seconds per frame.'
-
-!interrupt execution until keyboard interaction
-print *, "Press any key to start plotting"
-read(*,*)
-
-! this is the plotting loop (if some data exists in folder)
-! do i = 1,nFrames
-! 	call plot_data_from_file(sstate,i)
-! end do
 
 
 ! Cleanup
