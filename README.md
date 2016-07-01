@@ -105,6 +105,5 @@ Create a sim_parameter.dat file in your working directory and copy those lines i
 ## Screenshots
 
 ![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/1.png)
-
-
 ![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/2.png)
+![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/3.png)

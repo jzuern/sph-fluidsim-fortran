@@ -130,10 +130,10 @@ contains
     integer                         :: res
     double precision                :: dx,dy,r2,x_offset,y_offset,rmin,rmax
 
-    x_offset = 0.3d0 ! x-coordinates of blob center
-    y_offset = 0.3d0 ! y-coordinates of blob center
+    x_offset = 0.7d0 ! x-coordinates of blob center
+    y_offset = 0.6d0 ! y-coordinates of blob center
 
-    rmin = 0.0d0 ! inner radius of circular blob
+    rmin = 0.05d0 ! inner radius of circular blob
     rmax = 0.2d0 ! outer radius of circular blob
 
     dx = x - x_offset

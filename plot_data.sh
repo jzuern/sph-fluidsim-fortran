@@ -10,5 +10,5 @@ unset key
 do for [i=1:200] {                            
   	plot 'data/frame'.i.'.dat' u 1:2:3 with points palette pointtype 7 ps 1.2
 	set title 'Frame '.i.''
-	pause 0.03E0
+	pause 0.1E0
 }
