@@ -35,7 +35,7 @@ $ ./program sim_parameter.dat
 
 After the simulation has ended you may plot the particle data in all its glory by running the bash script:
 ```
-$ ./plotData.sh
+$ ./plot_data.sh
 ```
 
 ## EXPLANATION
@@ -61,7 +61,8 @@ Below is a list of source files:
 Code commentary should be enough to help understanding the tasks of each function and subroutine.
 
 
-In order to plot the particle data that has been written to file, I suggest using the provided bash script ´plotData.sh´ which loads Gnuplot and plots the contents of the ´data´ folder. You might need to make the bash script executable by typing
+In order to plot the particle data that has been written to file, I suggest using the provided bash script `plot_data.sh` which loads Gnuplot and plots the contents of the `data` folder. You might need to edit the script to make it suit your plotting needs. You also might want to make the bash script executable by typing
+
 ```
 $ chmod +x plotData.sh
 ```
@@ -72,7 +73,7 @@ $ chmod +x plotData.sh
 
 [Gnuplotfortran](http://gnuplotfortran.sourceforge.net/) for on-line visualization of the particle cloud for debugging and quick observation purposes.
 
-If you wish to visualize to data that has been written to file during the simulation, you may use the provided bash script ´plotData.sh´ to plot the particle data contained in those files.
+If you wish to visualize to data that has been written to file during the simulation, you may use the provided bash script `plot_data.sh` to plot the particle data contained in those files.
 
 
 ## Simulation parameters:

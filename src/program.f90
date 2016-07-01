@@ -47,26 +47,24 @@ call initialize_parameters(params)
 ! initialize all particles
 call init_particles(sstate,params)
 
-
 ! initialize linked lists
 call init_ll(sstate,ll)
 
 ! initialize linked cells lists
 call init_lc(sstate,params,lc)
 
-! setting up neighbor lists based on placed particles
+! set up neighbor lists based on placed particles
 call setup_neighbour_list(sstate, params, ll,lc)
-! call print_neighour_list(sstate, params, ll,lc) ! for debugging
+! call print_neighour_list(sstate, params, ll,lc)
 
 ! First integration
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
-																	       ! since we de not have any previous time step yet
+																	    ! since we de not have any previous time step yet
 
 !invoke gnuplot session
 call invoke_gnuplot(ptr_gctrl)
-
 
 
 nFrames 						= params%nFrames

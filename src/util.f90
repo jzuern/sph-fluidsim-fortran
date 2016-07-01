@@ -241,8 +241,9 @@ contains
 
     print *, "...Parsing completed "
 
-
   end subroutine
+
+
 
 
   subroutine write_data_to_file(sstate,i)
@@ -256,10 +257,15 @@ contains
     character(len=5)   :: dummy
     character(len=8)   :: fmt ! format descriptor
 
-    fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+    ! fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
+    fmt = '(I0)'   ! an integer of width 5 with zeros at the left
+
 
     write (dummy,fmt) i ! converting integer to string using a 'internal file'
+    ! write(dummy,*) i
     filename='data/frame'//trim(dummy)//'.dat'
+
+
     open(unit = 10, file = filename)
 
     n = sstate%nParticles
@@ -279,58 +285,18 @@ contains
   end subroutine
 
 
-  !
-  ! subroutine plot_data_from_file(sstate,i)
-  !
-  !     ! plots particles from particle data files
-  !
-  !     use gnufor2
-  !     type(systemstate),intent(in)                :: sstate
-  !     integer                                     :: i
-  !
-  !     character(len=100) :: datafile
-  !     character(len=100) :: commandfile
-  !     character(len=5)   :: dummy
-  !     character(len=8)   :: fmt ! format descriptor
-  !
-  !
-  !     fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
-  !     write (dummy,fmt) i ! converting integer to string using a 'internal file'
-  !     datafile = "data/frame" // trim(dummy) // ".dat"
-  !
-  !     !writing command file (here we specify the command file, from where gnuplot will
-  !     !                      get all the info about plotting specifications)
-  !     commandfile = "command_file.txt"
-  !
-  !     open (unit=11, file=commandfile, status="replace")
-  !     write ( 11,'(a,i2,a)') "set terminal  x11 size 1000,1000"
-  !     write ( 11,'(a,i2,a)') "unset key"
-  !     write ( 11,'(a,i2,a)') "set xrange [0:1]"
-  !     write ( 11,'(a,i2,a)') "set yrange [0:1]"
-  !     write ( 11,'(a,i2,a)') "unset grid"
-  !     write ( 11,'(a,i2,a)') 'plot "' // trim (datafile) //'" u 1:2:3 with points palette pointtype 7 ps 1.5'
-  !     write ( 11,'(a,i2,a)') "pause 0.200E+00" ! pause
-  !     write ( 11,'(a,i2,a)') "q"
-  !     close (11)
-  !
-  !     !calling gnuplot
-  !     call run_gnuplot (commandfile)
-  !
-  ! end subroutine
-
-
   subroutine plot_data_immediately(sstate,i,ptr_gctrl)
 
     ! plots data without saving to file (for debugging / quick glance at results)
 
     ! Attention: only works for the first 64 frames since the gnuplotfortran library
     !            for plotting only allows for 64 temp files to exist at the same time
+    !            (this is due to a known bug, which has never been fixed by the authors..)
 
 
-    use datatypes, only : i4b,dp
+    use datatypes, only : i4b
     use gnuplot_module_data, only : gnuplot_ctrl
     use gnuplot_module
-
 
     type(systemstate),intent(in)                :: sstate
     integer :: i
@@ -341,13 +307,13 @@ contains
     n = sstate%nParticles
 
     status = gnuplot_resetsession(ptr_gctrl)
-    print *, status
+    ! print *, status
     status = gnuplot_plot2d(ptr_gctrl,n,sstate%x(1:2*n:2),sstate%x(2:2*n:2),'particles')
 
-
-
-
   end subroutine
+
+
+
 
 
   subroutine invoke_gnuplot(ptr_gctrl)
@@ -382,12 +348,9 @@ contains
             status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
             status=gnuplot_setscale(ptr_gctrl,'x','NLG')
             status=gnuplot_setscale(ptr_gctrl,'y','NLG')
-            status=gnuplot_setstyle(ptr_gctrl,'points with pointtype 7')
-
-
+            status=gnuplot_setstyle(ptr_gctrl,'points')
 
       end subroutine invoke_gnuplot
-
 
 
 
