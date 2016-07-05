@@ -3,7 +3,7 @@ module sphfunctions
   ! Implementation of functions and subroutines for the SPH method
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 05/24/2016
+  !Last modified: 07/05/2016
 
 
 implicit none

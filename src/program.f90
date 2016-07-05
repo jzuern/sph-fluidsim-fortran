@@ -3,10 +3,8 @@ program sph
 	! Main program of project
 
 	!Created by Jannik Zuern on 05/16/2016
-	!Last modified: 06/19/2016
+	!Last modified: 07/05/2016
 
-
-	! use gnufor2       			!Module: gnuplot fortran visualizations
 
 	use integrate     !Module: definition of integration functions (leapfrog)
 	use sphfunctions  !Module: implementation of sph mechanics

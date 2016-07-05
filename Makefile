@@ -10,7 +10,6 @@ FCFLAGS = -g -fbounds-check
 # path to src files
 SOURCEPATH = src
 
-
 # libraries needed for linking: openMP, fortranposix, gnuplotfortran
 LDFLAGS =-fopenmp -lfortranposix -lgnuplotfortran
 
@@ -19,14 +18,12 @@ PROGRAMS = program
 
 # "make" builds all
 all: $(PROGRAMS)
-program.o:  gnufor2.o \
-						util.o \
+program.o:  util.o \
 						linkedlists.o \
 						sphfunctions.o  \
 						integrate.o
 
-program:    gnufor2.o \
-						util.o \
+program:    util.o \
 					  linkedlists.o \
 						sphfunctions.o \
 						integrate.o
@@ -36,14 +33,12 @@ program:    gnufor2.o \
 # used in order to list additional object files on which the
 # executable depends
 %: %.o
-	# $(FC) $(FCFLAGS) -o $@ $^
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
 
 # General rules for building prog.o from prog.f90 or prog.F90; $< is
 # used in order to list only the first prerequisite (the source file)
 # and not the additional prerequisites such as module or include files
 %.o: $(SOURCEPATH)/%.f90
-	# $(FC) $(FCFLAGS) -c $<
 	$(FC) $(FCFLAGS) -c $< $(LDFLAGS)
 
 # Utility targets

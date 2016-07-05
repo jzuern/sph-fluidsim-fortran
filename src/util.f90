@@ -3,7 +3,7 @@ module util
   !Auxiliary utility types, subroutines, and functions
 
   !Created by Jannik Zuern on 05/16/2016
-	!Last modified: 06/08/2016
+	!Last modified: 07/05/2016
 
 
 implicit none
