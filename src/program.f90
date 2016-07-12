@@ -16,7 +16,7 @@ program sph
 	implicit none
 
 
-! ACTUAL PROGRAM STARTING
+! PROGRAM STARTING
 !-------------------------------------------------------------
 !-------------------------------------------------------------
 
@@ -38,8 +38,7 @@ type(gnuplot_ctrl), pointer 						:: ptr_gctrl ! pointer to gnuplot control unit
 ! start counting of program runtime with intrinsic subroutine system_clock
 call system_clock ( t1, clock_rate, clock_max )
 
-
-! Write contents of parameter array into sim_parameter type (handy usage)
+! Write contents of parameter array into sim_parameter type
 call initialize_parameters(params)
 
 ! initialize all particles
@@ -53,13 +52,12 @@ call init_lc(sstate,params,lc)
 
 ! set up neighbor lists based on placed particles
 call setup_neighbour_list(sstate, params, ll,lc)
-! call print_neighour_list(sstate, params, ll,lc)
 
-! First integration
+! First time integration
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
-																	    ! since we de not have any previous time step yet
+																	    ! as we de not have any previous time step yet
 
 !invoke gnuplot session
 call invoke_gnuplot(ptr_gctrl)

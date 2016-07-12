@@ -68,9 +68,9 @@ contains
     logical                         :: b1,b2
     integer                         :: res
 
-    double precision :: diameter  = 0.7d0  ! diameter of rotating cross
+    double precision :: diameter  = 0.8d0  ! diameter of rotating cross
     double precision :: thickness = 0.02d0 ! thickness of roating cross beams
-    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center
+    double precision, dimension(2) :: center = (/0.5d0, 0.4d0/) ! rotation center
 
 
 
@@ -130,11 +130,11 @@ contains
     integer                         :: res
     double precision                :: dx,dy,r2,x_offset,y_offset,rmin,rmax
 
-    x_offset = 0.7d0 ! x-coordinates of blob center
-    y_offset = 0.6d0 ! y-coordinates of blob center
+    x_offset = 0.8d0 ! x-coordinates of blob center
+    y_offset = 0.2d0 ! y-coordinates of blob center
 
-    rmin = 0.05d0 ! inner radius of circular blob
-    rmax = 0.2d0 ! outer radius of circular blob
+    rmin = 0.050d0 ! inner radius of circular blob
+    rmax = 0.20d0 ! outer radius of circular blob
 
     dx = x - x_offset
     dy = y - y_offset
@@ -307,6 +307,7 @@ contains
     n = sstate%nParticles
 
     status = gnuplot_resetsession(ptr_gctrl)
+
     ! print *, status
     status = gnuplot_plot2d(ptr_gctrl,n,sstate%x(1:2*n:2),sstate%x(2:2*n:2),'particles')
 
@@ -319,27 +320,27 @@ contains
   subroutine invoke_gnuplot(ptr_gctrl)
 
             use datatypes, only : i4b,dp,lgc
-            use gnuplot_module_data, only : PI_D,gnuplot_ctrl,GNUPLOT_SHOWDEBUG,GNUPLOT_SHOWWARNINGS,GP_CMD_SIZE
+            use gnuplot_module_data, only : gnuplot_ctrl,GNUPLOT_SHOWWARNINGS
             use gnuplot_module
 
-            integer(i4b), external :: fortran_getchar
-
-            integer(i4b) :: numpoints=50,ii=0
-            integer(i4b) :: status=0
-            type(gnuplot_ctrl), pointer :: ptr_gctrl
-
-            character(len=1) :: debug
+            integer(i4b), external          :: fortran_getchar
+            integer(i4b)                    :: status=0
+            type(gnuplot_ctrl), pointer     :: ptr_gctrl
+            character(len=1)                :: debug
 
             ! disable Gnuoplot warnings
             GNUPLOT_SHOWWARNINGS=.false.
 
             ! invokng gnuplot session
             ptr_gctrl=>gnuplot_init('-persist')
-            if(.not.associated(ptr_gctrl)) stop 'Failed : to initiate a gnuplot session'
+            if(.not.associated(ptr_gctrl)) stop 'Failed to initiate a gnuplot session.'
 
+            print*, '  '
             print*, 'Press Enter to continue ...'
 
             status=fortran_getchar(debug)
+
+            status=gnuplot_set(ptr_gctrl,'terminal x11 size 800,800')
 
             status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,1.0_dp)
             status=gnuplot_setrange(ptr_gctrl,'y',0.0_dp,1.0_dp)

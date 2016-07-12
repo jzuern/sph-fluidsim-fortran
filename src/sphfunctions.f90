@@ -18,7 +18,7 @@ contains
     use util
     type(systemstate)                           :: sstate !system state object
     type(sim_parameter)											    :: params
-    double precision, dimension(2)              :: center = (/0.5d0, 0.5d0/) ! rotation center
+    double precision, dimension(2)              :: center = (/0.5d0, 0.4d0/) ! rotation center
     integer                                     :: particle
     double precision                            :: phi,phi_new, radius,dist_x,dist_y
 
@@ -468,6 +468,7 @@ contains
     double precision                      :: c0,cp,cv
     double precision                      :: dx,dy,r2
     double precision                      :: rhoi,rhoj,q,u,w0,wp,wv,dvx,dvy
+    double precision                      :: sp
 
     n         = sstate%nParticles
     h         = params%h
@@ -484,6 +485,9 @@ contains
     !clearing ll and lc
     lc = -1
     ll = -1
+
+    !set scale_parameter
+    sp = 1.0d0
 
     ! apply gravitational forces (=acceleration)
     sstate%a = 0.0d0
@@ -542,12 +546,12 @@ contains
                 ! test if particle n1 is actually liquid particle.
                 ! Then we can update acceleration accordingly
                 if ( n1 > sstate%nSolidParticles) THEN
-                  sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
-                  sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                  sstate%a(2*n1-1) = sstate%a(2*n1-1) - sp*(wp*dx + wv*dvx)
+                  sstate%a(2*n1-0) = sstate%a(2*n1-0) - sp*(wp*dy + wv*dvy)
                 end if
                 if (n2 > sstate%nSolidParticles) THEN
-                  sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
-                  sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+                  sstate%a(2*n2-1) = sstate%a(2*n2-1) + sp*(wp*dx + wv*dvx)
+                  sstate%a(2*n2-0) = sstate%a(2*n2-0) + sp*(wp*dy + wv*dvy)
                 end if
 
 
@@ -585,15 +589,16 @@ contains
                   dvx = sstate%v(2*n2-1) - sstate%v(2*n1-1)
                   dvy = sstate%v(2*n2-0) - sstate%v(2*n1-0)
 
+
                   ! test if particle n1 is actually liquid particle.
                   ! Then we can update acceleration accordingly
                   if ( n1 > sstate%nSolidParticles) THEN
-                    sstate%a(2*n1-1) = sstate%a(2*n1-1) - (wp*dx + wv*dvx)
-                    sstate%a(2*n1-0) = sstate%a(2*n1-0) - (wp*dy + wv*dvy)
+                    sstate%a(2*n1-1) = sstate%a(2*n1-1) - sp*(wp*dx + wv*dvx)
+                    sstate%a(2*n1-0) = sstate%a(2*n1-0) - sp*(wp*dy + wv*dvy)
                   end if
                   if (n2 > sstate%nSolidParticles) THEN
-                    sstate%a(2*n2-1) = sstate%a(2*n2-1) + (wp*dx + wv*dvx)
-                    sstate%a(2*n2-0) = sstate%a(2*n2-0) + (wp*dy + wv*dvy)
+                    sstate%a(2*n2-1) = sstate%a(2*n2-1) + sp*(wp*dx + wv*dvx)
+                    sstate%a(2*n2-0) = sstate%a(2*n2-0) + sp*(wp*dy + wv*dvy)
                   end if
                 end if
                 n2 = ll(n2)

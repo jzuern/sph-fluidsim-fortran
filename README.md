@@ -2,6 +2,16 @@
 
 Fortran 2D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
 
+# Possible FORTRAN90 features to be used in code:
+- usage of pointer instead of allocatable
+
+
+# Possible features to be added
+- Code in 3D
+- Fluid surface reconstruction (alpha shapes!)
+- better visualization of density / pressure
+
+
 
 ## DEPENDENCIES
 
@@ -64,7 +74,7 @@ Code commentary should be enough to help understanding the tasks of each functio
 In order to plot the particle data that has been written to file, I suggest using the provided bash script `plot_data.sh` which loads Gnuplot and plots the contents of the `data` folder. You might need to edit the script to make it suit your plotting needs. You also might want to make the bash script executable by typing
 
 ```
-$ chmod +x plotData.sh
+$ chmod +x plot_data.sh
 ```
 
 
