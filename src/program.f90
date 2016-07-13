@@ -55,11 +55,19 @@ call setup_neighbour_list(sstate, params, ll,lc)
 
 call write_data_to_file(sstate,0)
 
-! First time integration
+! First time-integration
+!
+! print *, sstate%a
+
+
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
+
+
+
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	    ! as we de not have any previous time step yet
+
 
 ! call write_data_to_file(sstate,0)
 

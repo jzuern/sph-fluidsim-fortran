@@ -107,7 +107,7 @@ contains
     type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:,:)      :: lc
-    integer, dimension(27)                      :: ndx,ndy,ndz
+    integer, dimension(26)                      :: ndx,ndy,ndz
     integer, dimension(3)                       :: nmax
 
     integer              :: nx,ny,nz
@@ -123,16 +123,16 @@ contains
 
     C = mass / pi / h8;
 
-    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
-    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
+    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
+    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
 
     nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
 
-    !  !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
+    !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
     do i = 1,nmax(1) ! x-coordinate
       do j = 1,nmax(2) ! y-coordinate
       do k = 1,nmax(3) ! z-coordinate
@@ -160,7 +160,7 @@ contains
             end do
 
             ! Now the neighboring cells of cell i,j
-            do no = 1,27
+            do no = 1,26
               nx = i+ndx(no)
               ny = j+ndy(no)
               nz = k+ndz(no)
@@ -498,7 +498,7 @@ contains
     integer                               :: n  !number of particles
     integer,dimension(3)                  :: nmax
     integer                               :: i,j,k,no
-    integer,dimension(27)                  :: ndx,ndy,ndz
+    integer,dimension(26)                  :: ndx,ndy,ndz
     integer                               :: n1,n2,nx,ny,nz
     double precision                      :: h,rho0,kk,mu,g,mass,h2
     double precision                      :: c0,cp,cv
@@ -540,12 +540,15 @@ contains
     call setup_neighbour_list(sstate,params,ll,lc)
     call compute_density_with_ll(sstate,params,ll,lc)
 
-    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
-    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
+    ! print *, "in compute_accel 1:"
+    ! print *, sstate%a
+
+    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
+    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
 
     ! Use openMP to parallelize cell access
-    ! !$omp parallel do private(n1,n2,rhoi,dx,dy,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,no,nx,ny)
+    !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
     do i = 1,nmax(1)
       do j = 1,nmax(2)
       do k = 1,nmax(3)
@@ -563,7 +566,7 @@ contains
             do while(n2 /= -1)
               dx = sstate%x(3*n2-2) - sstate%x(3*n1-2);
               dy = sstate%x(3*n2-1) - sstate%x(3*n1-1);
-              dy = sstate%x(3*n2-0) - sstate%x(3*n1-0);
+              dz = sstate%x(3*n2-0) - sstate%x(3*n1-0);
               r2 = dx*dx + dy*dy + dz*dz
 
               if(r2 < h2) then ! particles touching
@@ -580,6 +583,7 @@ contains
                 ! test if particle n1 is actually liquid particle.
                 ! Then we can update acceleration accordingly
                 if ( n1 > sstate%nSolidParticles) THEN
+                  ! print *, sp,wp,dx,wv,dvx
                   sstate%a(3*n1-2) = sstate%a(3*n1-2) - sp*(wp*dx + wv*dvx)
                   sstate%a(3*n1-1) = sstate%a(3*n1-1) - sp*(wp*dy + wv*dvy)
                   sstate%a(3*n1-0) = sstate%a(3*n1-0) - sp*(wp*dz + wv*dvz)
@@ -596,10 +600,12 @@ contains
             end do
 
             !check for neighboring particles in neighbor cells as well
-            do no = 1,27
+            do no = 1,26
               nx = i + ndx(no)
               ny = j + ndy(no)
               nz = k + ndz(no)
+              !
+              ! print *, nmax
 
               ! boundaries
               if(nx < 1)         cycle
@@ -608,6 +614,8 @@ contains
               if(ny > nmax(2))   cycle
               if(nz < 1)         cycle
               if(nz > nmax(3))   cycle
+
+              ! print *, "nx ny nz:" ,nx,ny,nz
 
               n2 = lc(nx,ny,nz)
 
@@ -657,7 +665,10 @@ contains
     end do
     ! !$omp end parallel do
 
-
+    ! print *, "in compute_accel 2:"
+    ! print *, sstate%a
+    !
+    ! print *, " out compute_accel"
 
   end subroutine
 

@@ -46,7 +46,7 @@ implicit none
      double precision :: g                  ! gravity strength Default: 9.81
      double precision :: rcut_x             ! Cutoff radius in x-direction for cells (as fraction of total size of simulation grid)
      double precision :: rcut_y             ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
-     double precision :: rcut_z             ! Cutoff radius in y-direction for cells (as fraction of total size of simulation grid)
+     double precision :: rcut_z             ! Cutoff radius in z-direction for cells (as fraction of total size of simulation grid)
      logical          :: mill               ! Decide whether a watermill is in the computational domain or not
      double precision :: dphi               ! rotation speed of watermill
 
@@ -69,7 +69,7 @@ contains
     logical                         :: b1,b2
     integer                         :: res
 
-    double precision :: diameter  = 0.8d0  ! diameter of rotating cross
+    double precision :: diameter  = 0.80d0  ! diameter of rotating cross
     double precision :: thickness = 0.02d0 ! thickness of roating cross beams
     double precision, dimension(2) :: center = (/0.5d0, 0.4d0/) ! rotation center (x.y coordinates)
 
