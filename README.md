@@ -5,13 +5,15 @@ Fortran 2D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with
 # Possible FORTRAN90 features to be used in code:
 - usage of pointer instead of allocatable
 
-
 # Possible features to be added
 - Code in 3D
-- Fluid surface reconstruction (alpha shapes!)
-- better visualization of density / pressure
+- inner friction
 
-
+# 3D debugging
+- reenable parallelization
+- find out which of the 27 entries in ndx,ndy,ndz are needed
+- debugging when linkedlist on
+- put functions and subroutines into correct modules
 
 ## DEPENDENCIES
 

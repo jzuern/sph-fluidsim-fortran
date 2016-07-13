@@ -22,8 +22,8 @@ module integrate
     integer :: startidx, endidx
 
     ! only update liquid particle positions according to integration scheme
-    startidx = 2*state%nSolidParticles+1
-    endidx   = 2*state%nParticles
+    startidx = 3*state%nSolidParticles+1
+    endidx   = 3*state%nParticles
 
     dt = params%dt
 
@@ -51,8 +51,8 @@ module integrate
     integer :: startidx,endidx
 
     ! only update liquid particle positions according to integration scheme
-    startidx = 2*state%nSolidParticles+1
-    endidx   = 2*state%nParticles
+    startidx = 3*state%nSolidParticles+1
+    endidx   = 3*state%nParticles
 
     dt = params%dt
 

@@ -27,7 +27,7 @@ integer																	:: nFrames 							! number of frames to calculate
 integer																	:: nSteps_per_frame     ! number of steps between shown frame
 integer 																:: i,j  								! loop iteration variables
 integer, allocatable, dimension(:)  	  :: ll 									! linked list array
-integer, allocatable, dimension(:,:)  	:: lc 									! linked cell array
+integer, allocatable, dimension(:,:,:)  	:: lc 									! linked cell array
 type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 integer 																:: t1,t2, clock_rate, clock_max ! for time counting
@@ -53,14 +53,18 @@ call init_lc(sstate,params,lc)
 ! set up neighbor lists based on placed particles
 call setup_neighbour_list(sstate, params, ll,lc)
 
+call write_data_to_file(sstate,0)
+
 ! First time integration
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	    ! as we de not have any previous time step yet
 
+! call write_data_to_file(sstate,0)
+
 !invoke gnuplot session
-call invoke_gnuplot(ptr_gctrl)
+! call invoke_gnuplot(ptr_gctrl)
 
 
 nFrames 						= params%nFrames
@@ -79,9 +83,9 @@ do i = 1,nFrames
 
 
   ! Plot data immediately
-	if (MODULO(i-1,10) == 0) THEN
-		 call plot_data_immediately(sstate,i,ptr_gctrl)
-	 end if
+	! if (MODULO(i-1,10) == 0) THEN
+	! 	 call plot_data_immediately(sstate,i,ptr_gctrl)
+	!  end if
 
 	! Write data to file
 	call write_data_to_file(sstate,i)
@@ -98,5 +102,4 @@ write ( *, * ) 'Elapsed time = ', real (t2-t1)/real(clock_rate), 'seconds, which
 ! Cleanup
 call free_state(sstate)
 
-! end of program
 end program sph
