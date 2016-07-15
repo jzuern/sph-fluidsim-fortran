@@ -10,42 +10,6 @@ implicit none
 
 contains
 
-
-  subroutine update_solid_particles_positions(sstate,params)
-
-    ! updates solid particles position solely based on passed time
-
-    use util
-    type(systemstate)                           :: sstate !system state object
-    type(sim_parameter)											    :: params
-    double precision, dimension(3)              :: center = (/0.5d0, 0.4d0 , 0.5d0/) ! rotation center
-    integer                                     :: particle
-    double precision                            :: phi,phi_new, radius,dist_x,dist_y,dist_z
-
-    do particle = 1 , sstate%nSolidParticles
-
-      ! convert positions from cartesian to polar coordinates on order to make easy calculations of the new particle positions
-      dist_x = sstate%x(3*particle-2) - center(1)
-      dist_y = sstate%x(3*particle-1) - center(2)
-
-      radius  =  SQRT (dist_x*dist_x + dist_y*dist_y )
-      phi     =  ATAN2 (dist_x , dist_y)
-
-      phi_new =  phi + params%dphi
-
-
-      ! convert positions back to cartesian coordinates
-      sstate%x(3*particle-2) = center(1) + radius * SIN(phi_new)
-      sstate%x(3*particle-1) = center(2) + radius * COS(phi_new)
-
-
-    end do
-
-  end subroutine
-
-
-
-
   subroutine init_particles(sstate,params)
 
     ! initialize all particle positions
@@ -107,7 +71,7 @@ contains
     type(sim_parameter)											    :: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:,:)      :: lc
-    integer, dimension(26)                      :: ndx,ndy,ndz
+    integer, dimension(13)                      :: ndx,ndy,ndz
     integer, dimension(3)                       :: nmax
 
     integer              :: nx,ny,nz
@@ -123,16 +87,20 @@ contains
 
     C = mass / pi / h8;
 
-    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
-    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
+    ! ndx = (/1,1, 1,1,1, 1, 1, 1, 1,0,0, 0,0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ! ndy = (/1,1, 1,0,0, 0,-1,-1,-1,1,1, 1,0, 0,-1,-1,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
+    ! ndz = (/1,0,-1,1,0,-1, 1, 0,-1,1,0,-1,1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
+
+    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
+    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
 
     nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
 
-    !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
+    !   !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
     do i = 1,nmax(1) ! x-coordinate
       do j = 1,nmax(2) ! y-coordinate
       do k = 1,nmax(3) ! z-coordinate
@@ -160,7 +128,7 @@ contains
             end do
 
             ! Now the neighboring cells of cell i,j
-            do no = 1,26
+            do no = 1,13
               nx = i+ndx(no)
               ny = j+ndy(no)
               nz = k+ndz(no)
@@ -334,8 +302,10 @@ contains
           z = 0.0d0
           do while ( z < 1.0d0)
             if (cross_indicator(x,y,z,params) /= 0) THEN
-              sstate%x(2*solidParticle-1) = x
-              sstate%x(2*solidParticle-0) = y
+              sstate%x(3*solidParticle-2) = x
+              sstate%x(3*solidParticle-1) = y
+              sstate%x(3*solidParticle-0) = z
+
               solidParticle = solidParticle + 1
             end if
             z = z + hh_solid
@@ -392,7 +362,7 @@ contains
     double precision    :: damp, tbounce
 
     ! ignore degenerate cases
-    if (sstate%v(i-2+which) == 0.d0) then
+    if (sstate%v(i-2 + which) == 0.d0) then
       return
     end if
 
@@ -446,6 +416,7 @@ contains
       first = sstate%nSolidParticles+1
       last  = sstate%nParticles
 
+      ! iterate through all liquid particles
       do i = first,last
 
         if (sstate%x(3*i - 2) < xmin) then
@@ -494,11 +465,11 @@ contains
     type (systemstate)                    :: sstate
     type(sim_parameter)										:: params
     integer, allocatable, dimension(:)    :: ll
-    integer, allocatable, dimension(:,:,:)  :: lc
+    integer, allocatable, dimension(:,:,:):: lc
     integer                               :: n  !number of particles
     integer,dimension(3)                  :: nmax
     integer                               :: i,j,k,no
-    integer,dimension(26)                  :: ndx,ndy,ndz
+    integer,dimension(13)                 :: ndx,ndy,ndz
     integer                               :: n1,n2,nx,ny,nz
     double precision                      :: h,rho0,kk,mu,g,mass,h2
     double precision                      :: c0,cp,cv
@@ -540,15 +511,17 @@ contains
     call setup_neighbour_list(sstate,params,ll,lc)
     call compute_density_with_ll(sstate,params,ll,lc)
 
-    ! print *, "in compute_accel 1:"
-    ! print *, sstate%a
 
-    ndx = (/1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1,1,1,0,0,0,-1,-1,-1,1,1,1,0,0,-1,-1,-1,1,1,1,0,0,0,-1,-1,-1 /)
-    ndz = (/1,0,-1,1,0,-1,1,0,-1,1,0,-1,1,-1,1,0,-1,1,0,-1,1,0,-1,1,0,-1 /)
+    ! ndx = (/1,1, 1,1,1, 1, 1, 1, 1,0,0, 0,0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ! ndy = (/1,1, 1,0,0, 0,-1,-1,-1,1,1, 1,0, 0,-1,-1,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
+    ! ndz = (/1,0,-1,1,0,-1, 1, 0,-1,1,0,-1,1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
+
+    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
+    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
+    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
 
     ! Use openMP to parallelize cell access
-    !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
+    !   !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
     do i = 1,nmax(1)
       do j = 1,nmax(2)
       do k = 1,nmax(3)
@@ -568,6 +541,8 @@ contains
               dy = sstate%x(3*n2-1) - sstate%x(3*n1-1);
               dz = sstate%x(3*n2-0) - sstate%x(3*n1-0);
               r2 = dx*dx + dy*dy + dz*dz
+              ! print *, "dz = "
+              ! print *, dz
 
               if(r2 < h2) then ! particles touching
                 rhoj = sstate%rho(n2)
@@ -580,18 +555,27 @@ contains
                 dvy = sstate%v(3*n2-1) - sstate%v(3*n1-1)
                 dvz = sstate%v(3*n2-0) - sstate%v(3*n1-0)
 
+                ! print *, sstate%v(3*n2-2) , sstate%v(3*n1-2)
+                ! print *, sstate%v(3*n2-0) , sstate%v(3*n1-0)
+
                 ! test if particle n1 is actually liquid particle.
                 ! Then we can update acceleration accordingly
                 if ( n1 > sstate%nSolidParticles) THEN
-                  ! print *, sp,wp,dx,wv,dvx
+                  ! print *, "z-coordinate:" , sp*(wp*dz + wv*dvz)
+                  ! print *, "x-coordinate:" , sp*(wp*dx + wv*dvx)
+
                   sstate%a(3*n1-2) = sstate%a(3*n1-2) - sp*(wp*dx + wv*dvx)
                   sstate%a(3*n1-1) = sstate%a(3*n1-1) - sp*(wp*dy + wv*dvy)
                   sstate%a(3*n1-0) = sstate%a(3*n1-0) - sp*(wp*dz + wv*dvz)
+
+                  ! print *,  "a_z = ", sstate%a(3*n1-0)
+                  ! print *,  "a_x = ", sstate%a(3*n1-2)
+
                 end if
                 if (n2 > sstate%nSolidParticles) THEN
                   sstate%a(3*n2-2) = sstate%a(3*n2-2) + sp*(wp*dx + wv*dvx)
                   sstate%a(3*n2-1) = sstate%a(3*n2-1) + sp*(wp*dy + wv*dvy)
-                  sstate%a(3*n1-0) = sstate%a(3*n1-0) + sp*(wp*dz + wv*dvz)
+                  sstate%a(3*n2-0) = sstate%a(3*n2-0) + sp*(wp*dz + wv*dvz)
                 end if
 
 
@@ -600,12 +584,11 @@ contains
             end do
 
             !check for neighboring particles in neighbor cells as well
-            do no = 1,26
+            do no = 1,13
               nx = i + ndx(no)
               ny = j + ndy(no)
               nz = k + ndz(no)
               !
-              ! print *, nmax
 
               ! boundaries
               if(nx < 1)         cycle
@@ -615,7 +598,7 @@ contains
               if(nz < 1)         cycle
               if(nz > nmax(3))   cycle
 
-              ! print *, "nx ny nz:" ,nx,ny,nz
+              ! print *, "Checking cell ", nx, ny,nz
 
               n2 = lc(nx,ny,nz)
 
@@ -663,12 +646,11 @@ contains
       end do
       end do
     end do
-    ! !$omp end parallel do
+    !   !$omp end parallel do
 
     ! print *, "in compute_accel 2:"
     ! print *, sstate%a
-    !
-    ! print *, " out compute_accel"
+
 
   end subroutine
 

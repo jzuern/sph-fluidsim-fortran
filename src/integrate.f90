@@ -35,6 +35,9 @@ module integrate
       call update_solid_particles_positions(state,params)
     end if
 
+    ! print *, "leapfrog_start: "
+    ! print *, state%v
+
     call reflect_bc(state)
 
     return
@@ -48,7 +51,7 @@ module integrate
     type (systemstate)             :: state
     type(sim_parameter)						 :: params
     double precision               :: dt
-    integer :: startidx,endidx
+    integer                        :: startidx,endidx
 
     ! only update liquid particle positions according to integration scheme
     startidx = 3*state%nSolidParticles+1

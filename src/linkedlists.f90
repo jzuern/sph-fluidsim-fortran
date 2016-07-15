@@ -106,7 +106,7 @@ contains
 
     allocate(ll(sstate%nParticles))
 
-    ll = -1 ! initialize ll with -1 (empty cell)
+    ll = -1 ! initialize ll to -1 (empty cell)
 
   end subroutine
 
@@ -127,7 +127,7 @@ contains
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
     allocate(lc(nmax(1),nmax(2),nmax(3)))
-    lc = -1 ! initialize lc with -1 (empty cell)
+    lc = -1 ! initialize lc to -1 (empty cell)
 
 
   end subroutine

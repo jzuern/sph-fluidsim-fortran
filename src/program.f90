@@ -27,7 +27,7 @@ integer																	:: nFrames 							! number of frames to calculate
 integer																	:: nSteps_per_frame     ! number of steps between shown frame
 integer 																:: i,j  								! loop iteration variables
 integer, allocatable, dimension(:)  	  :: ll 									! linked list array
-integer, allocatable, dimension(:,:,:)  	:: lc 									! linked cell array
+integer, allocatable, dimension(:,:,:)  :: lc 									! linked cell array
 type(systemstate)                 	    :: sstate								! Simulation state
 type(sim_parameter)											:: params               ! parameter of simulation
 integer 																:: t1,t2, clock_rate, clock_max ! for time counting
@@ -56,18 +56,14 @@ call setup_neighbour_list(sstate, params, ll,lc)
 call write_data_to_file(sstate,0)
 
 ! First time-integration
-!
-! print *, sstate%a
-
-
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 
+! print *, sstate%a
 
 
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	    ! as we de not have any previous time step yet
-
 
 ! call write_data_to_file(sstate,0)
 

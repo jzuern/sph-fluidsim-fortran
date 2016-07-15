@@ -58,6 +58,41 @@ implicit none
 contains
 
 
+  subroutine update_solid_particles_positions(sstate,params)
+
+    ! updates solid particles position solely based on passed time
+
+    type(systemstate)                           :: sstate !system state object
+    type(sim_parameter)											    :: params
+    double precision, dimension(3)              :: center = (/0.5d0, 0.5d0 , 0.5d0/) ! rotation center
+    integer                                     :: particle
+    double precision                            :: phi,phi_new, radius,dist_x,dist_y,dist_z
+
+    do particle = 1 , sstate%nSolidParticles
+
+      ! convert positions from cartesian to polar coordinates on order to make easy calculations of the new particle positions
+      dist_x = sstate%x(3*particle-2) - center(1)
+      dist_z = sstate%x(3*particle-0) - center(2)
+
+      radius  =  SQRT (dist_x*dist_x + dist_z*dist_z )
+      phi     =  ATAN2 (dist_x , dist_z)
+
+      phi_new =  phi + params%dphi
+
+
+      ! convert positions back to cartesian coordinates
+      sstate%x(3*particle-2) = center(1) + radius * SIN(phi_new)
+      sstate%x(3*particle-0) = center(2) + radius * COS(phi_new)
+      ! sstate%x(3*particle-0) = sstate%x(3*particle-0) ! y-coordinate stays the same
+
+
+
+    end do
+
+  end subroutine
+
+
+
   function cross_indicator (x,y,z,params) result(res)
 
     !indicates whether point (x,y) lies within a cross (res == 1) or not (res == 0)
@@ -66,12 +101,12 @@ contains
 
     type(sim_parameter)             :: params
     double precision,intent(in)     :: x,y,z
-    logical                         :: b1,b2
+    logical                         :: b1,b2,b3
     integer                         :: res
 
-    double precision :: diameter  = 0.80d0  ! diameter of rotating cross
-    double precision :: thickness = 0.02d0 ! thickness of roating cross beams
-    double precision, dimension(2) :: center = (/0.5d0, 0.4d0/) ! rotation center (x.y coordinates)
+    double precision :: diameter  = 0.70d0  ! diameter of rotating cross
+    double precision :: thickness = 0.05d0 ! thickness of roating cross beams
+    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center (x.y coordinates)
 
 
 
@@ -79,11 +114,14 @@ contains
 
       res = 0
 
-      ! check wheter x and y coordinates lay within domain of cross
-      b1 = ( ABS(x - center(1)) < diameter/2  ) .AND. ( ABS(y - center(2)) < thickness/2  )
-      b2 = ( ABS(y - center(2)) < diameter/2  ) .AND. ( ABS(x - center(1)) < thickness/2  )
+      ! check whether x and z coordinates lay within domain of cross
+      b1 = ( ABS(x - center(1)) < diameter/2  ) .AND. ( ABS(z - center(2)) < thickness/2  )
+      b2 = ( ABS(z - center(2)) < diameter/2  ) .AND. ( ABS(x - center(1)) < thickness/2  )
 
-      if (b1 .OR. b2) THEN
+      ! set cross height
+      b3 = y < 0.5
+
+      if ((b1 .OR. b2) .AND. b3) THEN
         res = 1
       end if
 
@@ -134,10 +172,10 @@ contains
     double precision                :: dx,dy,dz,r2,x_offset,y_offset,z_offset,rmin,rmax
 
     x_offset = 0.8d0 ! x-coordinates of blob center
-    y_offset = 0.2d0 ! y-coordinates of blob center
+    y_offset = 0.3d0 ! y-coordinates of blob center
     z_offset = 0.5d0 ! z-coordinates of blob center
 
-    rmin = 0.000d0 ! inner radius of circular blob
+    rmin = 0.00d0 ! inner radius of circular blob
     rmax = 0.20d0 ! outer radius of circular blob
 
     dx = x - x_offset
@@ -284,7 +322,7 @@ contains
 
     ! writes particle positions into file
     do k = 1,n
-      write (10,*) x(k),y(k),z(k),rho(k)
+      write (10,*) x(k),z(k),y(k),rho(k)
     end do
 
 
@@ -293,78 +331,78 @@ contains
   end subroutine
 
 
-  ! subroutine plot_data_immediately(sstate,i,ptr_gctrl)
-  !
-  !   ! plots data without saving to file (for debugging / quick glance at results)
-  !
-  !   ! Attention: only works for the first 64 frames since the gnuplotfortran library
-  !   !            for plotting only allows for 64 temp files to exist at the same time
-  !   !            (this is due to a known bug, which has never been fixed by the  library authors..)
-  !
-  !
-  !   use datatypes, only : i4b
-  !   use gnuplot_module_data, only : gnuplot_ctrl
-  !   use gnuplot_module
-  !
-  !
-  !   type(systemstate),intent(in)                :: sstate
-  !   integer                                     :: i
-  !   type(gnuplot_ctrl), pointer                 :: ptr_gctrl
-  !   integer(i4b)                                :: status
-  !   integer(i4b)                                :: n
-  !
-  !   n = sstate%nParticles
-  !
-  !   status = gnuplot_resetsession(ptr_gctrl) ! remove previous plots from current Gnuplot session
-  !
-  !   status = gnuplot_plot3d(ptr_gctrl,n,sstate%x(1:3*n:3),sstate%x(2:3*n:3),sstate%x(3:3*n:3),'particles')
-  !
-  ! end subroutine
+  subroutine plot_data_immediately(sstate,i,ptr_gctrl)
+
+    ! plots data without saving to file (for debugging / quick glance at results)
+
+    ! Attention: only works for the first 64 frames since the gnuplotfortran library
+    !            for plotting only allows for 64 temp files to exist at the same time
+    !            (this is due to a known bug, which has never been fixed by the  library authors..)
+
+
+    use datatypes, only : i4b
+    use gnuplot_module_data, only : gnuplot_ctrl
+    use gnuplot_module
+
+
+    type(systemstate),intent(in)                :: sstate
+    integer                                     :: i
+    type(gnuplot_ctrl), pointer                 :: ptr_gctrl
+    integer(i4b)                                :: status
+    integer(i4b)                                :: n
+
+    n = sstate%nParticles
+
+    status = gnuplot_resetsession(ptr_gctrl) ! remove previous plots from current Gnuplot session
+
+    ! status = gnuplot_plot3d(ptr_gctrl,n,sstate%x(1:3*n:3),sstate%x(2:3*n:3),sstate%x(3:3*n:3),'particles')
+
+  end subroutine
 
 
 
 
 
-  ! subroutine invoke_gnuplot(ptr_gctrl)
-  !
-  !   ! invoke a Gnuplot session from within FORTRAN
-  !
-  !     use datatypes, only : i4b,dp,lgc
-  !     use gnuplot_module_data, only : gnuplot_ctrl,GNUPLOT_SHOWWARNINGS
-  !     use gnuplot_module
-  !
-  !     integer(i4b), external          :: fortran_getchar
-  !     integer(i4b)                    :: status=0
-  !     type(gnuplot_ctrl), pointer     :: ptr_gctrl
-  !     character(len=1)                :: debug
-  !
-  !     ! disable Gnuoplot warnings
-  !     GNUPLOT_SHOWWARNINGS=.false.
-  !
-  !     ! invokng gnuplot session
-  !     ptr_gctrl=>gnuplot_init('-persist')
-  !     if(.not.associated(ptr_gctrl)) stop 'Failed to initiate a gnuplot session.'
-  !
-  !     print*, '  '
-  !     print*, 'Press Enter to continue ...'
-  !
-  !     status=fortran_getchar(debug)
-  !
-  !     status=gnuplot_set(ptr_gctrl,'terminal x11 size 800,800')
-  !
-  !     status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,1.0_dp)
-  !     status=gnuplot_setrange(ptr_gctrl,'y',0.0_dp,1.0_dp)
-  !     status=gnuplot_setrange(ptr_gctrl,'z',0.0_dp,1.0_dp)
-  !     status=gnuplot_settitle(ptr_gctrl,'Particle visualization')
-  !     status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
-  !     status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
-  !     status=gnuplot_setaxislabel(ptr_gctrl,'z','z')
-  !     status=gnuplot_setscale(ptr_gctrl,'x','NLG')
-  !     status=gnuplot_setscale(ptr_gctrl,'y','NLG')
-  !     status=gnuplot_setscale(ptr_gctrl,'z','NLG')
-  !     status=gnuplot_setstyle(ptr_gctrl,'points')
-  !
-  ! end subroutine invoke_gnuplot
+  subroutine invoke_gnuplot(ptr_gctrl)
+
+    ! invoke a Gnuplot session from within FORTRAN
+
+      use datatypes, only : i4b,dp,lgc
+      use gnuplot_module_data, only : gnuplot_ctrl,GNUPLOT_SHOWWARNINGS
+      use gnuplot_module
+
+      integer(i4b), external          :: fortran_getchar
+      integer(i4b)                    :: status=0
+      type(gnuplot_ctrl), pointer     :: ptr_gctrl
+      character(len=1)                :: debug
+
+      ! disable Gnuoplot warnings
+      GNUPLOT_SHOWWARNINGS=.false.
+
+      ! invokng gnuplot session
+      ptr_gctrl=>gnuplot_init('-persist')
+      if(.not.associated(ptr_gctrl)) stop 'Failed to initiate a gnuplot session.'
+
+      print*, '  '
+      print*, 'Press Enter to continue ...'
+
+      status=fortran_getchar(debug)
+
+      status=gnuplot_set(ptr_gctrl,'terminal x11 size 800,800')
+
+      status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,1.0_dp)
+      status=gnuplot_setrange(ptr_gctrl,'y',0.0_dp,1.0_dp)
+      status=gnuplot_setrange(ptr_gctrl,'z',0.0_dp,1.0_dp)
+      status=gnuplot_settitle(ptr_gctrl,'Particle visualization')
+      status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
+      status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
+      status=gnuplot_setaxislabel(ptr_gctrl,'z','z')
+      status=gnuplot_setscale(ptr_gctrl,'x','NLG')
+      status=gnuplot_setscale(ptr_gctrl,'y','NLG')
+      status=gnuplot_setscale(ptr_gctrl,'z','NLG')
+      status=gnuplot_setstyle(ptr_gctrl,'points')
+
+  end subroutine invoke_gnuplot
 
 
 
