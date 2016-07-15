@@ -1,14 +1,15 @@
-# Fortran 2D SPH Fluid Simulation
+# Fortran 3D SPH Fluid Simulation
 
-Fortran 2D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
+Fortran 3D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
 
-# Possible FORTRAN90 features to be used in code:
+## TODO:
+### Possible FORTRAN90 features to be used in code:
 - test whether fast running indices are set in an intelligent way
 
-# Possible features to be added
+### Possible features to be added
 - calculate potential + energy of motion
 
-# 3D debugging
+### 3D debugging
 - redo parallelization
 - put functions and subroutines into correct modules
 - reenable live gnuplotting
