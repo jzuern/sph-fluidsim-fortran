@@ -3,16 +3,13 @@
 Fortran 3D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
 
 ## TODO:
-### Possible FORTRAN90 features to be used in code:
-- test whether fast running indices are set in an intelligent way
 
 ### Possible features to be added
-- calculate potential + energy of motion
+- calculate total energy after each time step
+- plot mill and particles in different colors
 
-### 3D debugging
+### Debugging
 - redo parallelization
-- put functions and subroutines into correct modules
-- reenable live gnuplotting
 
 ## DEPENDENCIES
 
@@ -51,7 +48,7 @@ $ ./plot_data.sh
 
 ## EXPLANATION
 
-This 2D SPH fluid simulation is loosely based on an [introductory paper](http://www.cs.cornell.edu/~bindel/class/cs5220-f11/code/sph.pdf) on this matter . I used the provided code fragments as an inspiration for my own implementation.
+This 3D SPH fluid simulation is loosely based on an [introductory paper](http://www.cs.cornell.edu/~bindel/class/cs5220-f11/code/sph.pdf) on this matter. I used the provided code fragments as an inspiration for my own implementation.
 
 Additionally, I implemented a linked lists based approach in order to account for the quadratic time complexity when increasing the number of particles.
 
@@ -60,22 +57,21 @@ The simulation setup introduces a particle cloud (liquid blob) that is falling d
 
 
 The code within the source files is structured in a way as to reflect its role in the simulation.
-Below is a list of source files:
+Below we have the list of source files:
 
 - gnufor2.f90: interface to call for Gnuplot instance inside FORTRAN program
 - integrate.f90: implementation of the leapfrog integration method
 - linkedlist.f90: implementation of linked list bookkeeping routines
 - sphfunctions:f90: implementation of particle interaction routines
-- util.f90: auxiliary functions with no other suitable place
-- program.f90: main program which starts simulation
+- util.f90: auxiliary functions
+- program.f90: main program which starts simulation and contains simulation loop
 
-Code commentary should be enough to help understanding the tasks of each function and subroutine.
+Additionally commentary on each function is provided within the source files themselves.
 
-
-In order to plot the particle data that has been written to file, I suggest using the provided bash script `plot_data.sh` which loads Gnuplot and plots the contents of the `data` folder. You might need to edit the script to make it suit your plotting needs. You also might want to make the bash script executable by typing
+In order to plot the particle data that has been written to file, I suggest using the provided bash script `plot_data3d.sh` which starts Gnuplot and plots the contents of the `data` folder. You might need to edit the script to make it suit your plotting needs. You also might want to make the bash script executable by typing
 
 ```
-$ chmod +x plot_data.sh
+$ chmod +x plot_data3d.sh
 ```
 
 

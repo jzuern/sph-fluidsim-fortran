@@ -23,6 +23,7 @@ implicit none
      double precision,allocatable,dimension(:) :: rho  ! density
 
      double precision                          :: mass ! mass
+     double precision                          :: energy ! potential energy and energy of motion
      integer                                   :: nLiquidParticles ! number of particles in liquid
      integer                                   :: nSolidParticles  ! number of particles in solid object
      integer                                   :: nParticles       ! total number of particles in simulation
@@ -337,7 +338,7 @@ contains
 
     ! Attention: only works for the first 64 frames since the gnuplotfortran library
     !            for plotting only allows for 64 temp files to exist at the same time
-    !            (this is due to a known bug, which has never been fixed by the  library authors..)
+    !            (this is due to a known bug, which has never been fixed by the  library authors...)
 
 
     use datatypes, only : i4b
@@ -345,17 +346,39 @@ contains
     use gnuplot_module
 
 
-    type(systemstate),intent(in)                :: sstate
-    integer                                     :: i
-    type(gnuplot_ctrl), pointer                 :: ptr_gctrl
-    integer(i4b)                                :: status
-    integer(i4b)                                :: n
+    type(systemstate),intent(in)                   :: sstate
+    integer                                        :: i,iter,c
+    type(gnuplot_ctrl), pointer                    :: ptr_gctrl
+    integer(i4b)                                   :: status
+    integer(i4b)                                   :: n,n_c
+    double precision, allocatable, dimension (:,:) :: y
+    double precision, allocatable, dimension(:)    :: x_coords,z_coords
 
     n = sstate%nParticles
 
-    status = gnuplot_resetsession(ptr_gctrl) ! remove previous plots from current Gnuplot session
+    c = 5 ! plot only every c-th particle (it is more efficient)
+    n_c = (n/c)
 
-    ! status = gnuplot_plot3d(ptr_gctrl,n,sstate%x(1:3*n:3),sstate%x(2:3*n:3),sstate%x(3:3*n:3),'particles')
+    allocate (y(n_c,n_c))
+    allocate (x_coords(n_c))
+    allocate (z_coords(n_c))
+
+    ! preparing data structure for plotting
+    x_coords = sstate%x(1:3*n:3*c)
+    z_coords = sstate%x(3:3*n:3*c)
+
+    y = -1.d0 ! initialize z to value of -1.0 so that corresponding particles won't be visible in plot
+    do iter = 1,n_c
+      y(iter,iter) = sstate%x(3*iter*c - 1)
+    end do
+
+
+    status = gnuplot_resetsession(ptr_gctrl) ! remove previous plots from current Gnuplot session
+    if(status.ne.0) stop 'Failed to reset Gnuplot session.'
+
+    status = gnuplot_plot3d(ptr_gctrl , n_c , n_c , x_coords , z_coords , y)
+    if(status.ne.0) stop 'Failed : to splot (3D) in subroutine plot_data_immediately'
+
 
   end subroutine
 
@@ -397,10 +420,12 @@ contains
       status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
       status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
       status=gnuplot_setaxislabel(ptr_gctrl,'z','z')
-      status=gnuplot_setscale(ptr_gctrl,'x','NLG')
-      status=gnuplot_setscale(ptr_gctrl,'y','NLG')
-      status=gnuplot_setscale(ptr_gctrl,'z','NLG')
+      ! status=gnuplot_setscale(ptr_gctrl,'x','NLG')
+      ! status=gnuplot_setscale(ptr_gctrl,'y','NLG')
+      ! status=gnuplot_setscale(ptr_gctrl,'z','NLG')
       status=gnuplot_setstyle(ptr_gctrl,'points')
+
+
 
   end subroutine invoke_gnuplot
 

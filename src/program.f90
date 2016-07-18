@@ -59,16 +59,14 @@ call write_data_to_file(sstate,0)
 print *, "Calculating frame ", 0
 call compute_accel(sstate, params, ll,lc)
 
-! print *, sstate%a
-
 
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
 																	    ! as we de not have any previous time step yet
 
-! call write_data_to_file(sstate,0)
+call write_data_to_file(sstate,0)
 
 !invoke gnuplot session
-! call invoke_gnuplot(ptr_gctrl)
+call invoke_gnuplot(ptr_gctrl)
 
 
 nFrames 						= params%nFrames
@@ -87,9 +85,9 @@ do i = 1,nFrames
 
 
   ! Plot data immediately
-	! if (MODULO(i-1,10) == 0) THEN
-	! 	 call plot_data_immediately(sstate,i,ptr_gctrl)
-	!  end if
+	if (MODULO(i-1,10) == 0) THEN
+		 call plot_data_immediately(sstate,i,ptr_gctrl)
+	 end if
 
 	! Write data to file
 	call write_data_to_file(sstate,i)

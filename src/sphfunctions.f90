@@ -3,7 +3,7 @@ module sphfunctions
   ! Implementation of functions and subroutines for the SPH method
 
   !Created by Jannik Zuern on 05/16/2016
-  !Last modified: 07/05/2016
+  !Last modified: 07/18/2016
 
 
 implicit none
@@ -83,13 +83,9 @@ contains
     h2 = h*h
     h8 = h2*h2*h2*h2
 
-    mass       = sstate%mass
+    mass = sstate%mass
 
     C = mass / pi / h8;
-
-    ! ndx = (/1,1, 1,1,1, 1, 1, 1, 1,0,0, 0,0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ! ndy = (/1,1, 1,0,0, 0,-1,-1,-1,1,1, 1,0, 0,-1,-1,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
-    ! ndz = (/1,0,-1,1,0,-1, 1, 0,-1,1,0,-1,1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
 
     ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
     ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
@@ -511,11 +507,6 @@ contains
     call setup_neighbour_list(sstate,params,ll,lc)
     call compute_density_with_ll(sstate,params,ll,lc)
 
-
-    ! ndx = (/1,1, 1,1,1, 1, 1, 1, 1,0,0, 0,0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ! ndy = (/1,1, 1,0,0, 0,-1,-1,-1,1,1, 1,0, 0,-1,-1,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
-    ! ndz = (/1,0,-1,1,0,-1, 1, 0,-1,1,0,-1,1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
-
     ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
     ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
     ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
@@ -541,8 +532,7 @@ contains
               dy = sstate%x(3*n2-1) - sstate%x(3*n1-1);
               dz = sstate%x(3*n2-0) - sstate%x(3*n1-0);
               r2 = dx*dx + dy*dy + dz*dz
-              ! print *, "dz = "
-              ! print *, dz
+
 
               if(r2 < h2) then ! particles touching
                 rhoj = sstate%rho(n2)
@@ -555,21 +545,15 @@ contains
                 dvy = sstate%v(3*n2-1) - sstate%v(3*n1-1)
                 dvz = sstate%v(3*n2-0) - sstate%v(3*n1-0)
 
-                ! print *, sstate%v(3*n2-2) , sstate%v(3*n1-2)
-                ! print *, sstate%v(3*n2-0) , sstate%v(3*n1-0)
 
                 ! test if particle n1 is actually liquid particle.
                 ! Then we can update acceleration accordingly
                 if ( n1 > sstate%nSolidParticles) THEN
-                  ! print *, "z-coordinate:" , sp*(wp*dz + wv*dvz)
-                  ! print *, "x-coordinate:" , sp*(wp*dx + wv*dvx)
+
 
                   sstate%a(3*n1-2) = sstate%a(3*n1-2) - sp*(wp*dx + wv*dvx)
                   sstate%a(3*n1-1) = sstate%a(3*n1-1) - sp*(wp*dy + wv*dvy)
                   sstate%a(3*n1-0) = sstate%a(3*n1-0) - sp*(wp*dz + wv*dvz)
-
-                  ! print *,  "a_z = ", sstate%a(3*n1-0)
-                  ! print *,  "a_x = ", sstate%a(3*n1-2)
 
                 end if
                 if (n2 > sstate%nSolidParticles) THEN
@@ -648,14 +632,7 @@ contains
     end do
     !   !$omp end parallel do
 
-    ! print *, "in compute_accel 2:"
-    ! print *, sstate%a
-
-
   end subroutine
-
-
-
 
 
 end module sphfunctions
