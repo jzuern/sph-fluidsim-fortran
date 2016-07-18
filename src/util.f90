@@ -84,9 +84,6 @@ contains
       ! convert positions back to cartesian coordinates
       sstate%x(3*particle-2) = center(1) + radius * SIN(phi_new)
       sstate%x(3*particle-0) = center(2) + radius * COS(phi_new)
-      ! sstate%x(3*particle-0) = sstate%x(3*particle-0) ! y-coordinate stays the same
-
-
 
     end do
 
@@ -107,8 +104,7 @@ contains
 
     double precision :: diameter  = 0.70d0  ! diameter of rotating cross
     double precision :: thickness = 0.05d0 ! thickness of roating cross beams
-    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center (x.y coordinates)
-
+    double precision, dimension(2) :: center = (/0.5d0, 0.5d0/) ! rotation center (x.z coordinates)
 
 
     if(params%mill) then
@@ -172,9 +168,9 @@ contains
     integer                         :: res
     double precision                :: dx,dy,dz,r2,x_offset,y_offset,z_offset,rmin,rmax
 
-    x_offset = 0.8d0 ! x-coordinates of blob center
-    y_offset = 0.3d0 ! y-coordinates of blob center
-    z_offset = 0.5d0 ! z-coordinates of blob center
+    x_offset = 0.7d0 ! x-coordinates of blob center
+    y_offset = 0.5d0 ! y-coordinates of blob center
+    z_offset = 0.6d0 ! z-coordinates of blob center
 
     rmin = 0.00d0 ! inner radius of circular blob
     rmax = 0.20d0 ! outer radius of circular blob
@@ -231,9 +227,6 @@ contains
     deallocate(state%rho)
 
   end subroutine
-
-
-
 
 
 
@@ -356,7 +349,7 @@ contains
 
     n = sstate%nParticles
 
-    c = 5 ! plot only every c-th particle (it is more efficient)
+    c = 20 ! plot only every c-th particle (it is more time-efficient than plotting every particle)
     n_c = (n/c)
 
     allocate (y(n_c,n_c))
@@ -412,7 +405,6 @@ contains
       status=fortran_getchar(debug)
 
       status=gnuplot_set(ptr_gctrl,'terminal x11 size 800,800')
-
       status=gnuplot_setrange(ptr_gctrl,'x',0.0_dp,1.0_dp)
       status=gnuplot_setrange(ptr_gctrl,'y',0.0_dp,1.0_dp)
       status=gnuplot_setrange(ptr_gctrl,'z',0.0_dp,1.0_dp)
@@ -420,10 +412,7 @@ contains
       status=gnuplot_setaxislabel(ptr_gctrl,'x','x')
       status=gnuplot_setaxislabel(ptr_gctrl,'y','y')
       status=gnuplot_setaxislabel(ptr_gctrl,'z','z')
-      ! status=gnuplot_setscale(ptr_gctrl,'x','NLG')
-      ! status=gnuplot_setscale(ptr_gctrl,'y','NLG')
-      ! status=gnuplot_setscale(ptr_gctrl,'z','NLG')
-      status=gnuplot_setstyle(ptr_gctrl,'points')
+      status=gnuplot_setstyle(ptr_gctrl,'points pt 6 ps 1.4')
 
 
 

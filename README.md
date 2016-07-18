@@ -3,13 +3,8 @@
 Fortran 3D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
 
 ## TODO:
-
-### Possible features to be added
-- calculate total energy after each time step
-- plot mill and particles in different colors
-
-### Debugging
 - redo parallelization
+- plot mill and particles in different colors
 
 ## DEPENDENCIES
 
@@ -91,18 +86,19 @@ This file is read using FORTRAN's namelist routine
 Exemplary parameters for water-like behavior are:
 ```
 &SIMPARAMETER
-nframes=100                ! Number of frames
-nSteps_per_frame=100       ! Number of steps per frame
-h=0.010                    ! Size of particles (radius)
-dt=0.0001                  ! Time step size
-rho0=1000.0                ! Reference density
-k=1000000.0                ! Bulk modulus
-mu=0.1                     ! Viscosity
-g=9.81                     ! gravity strength
-rcut_x=0.1                 ! cell cutoff radius in x-direction (as fraction of total size of simulation grid)
-rcut_y=0.1                 ! cell cutoff radius in y-direction (as fraction of total size of simulation grid)
-mill=.FALSE.               ! Decide whether a watermill is in the computational domain or not
-dphi=-0.0003               ! rotation speed of watermill (only applicable if mill == .true.)
+nframes=100              ! Number of frames
+nSteps_per_frame=50      ! Number of steps per frame. Default: 50
+h=0.015                  ! Size of particles (radius). Also: Distance of particles in initial configuration
+dt=1.0E-4                ! Time step size. Default: 1E-4
+rho0=1.0E4               ! Reference density Default: 10000
+k=1.0E6                  ! Bulk modulus. Default: 1000
+mu=0.001                 ! Viscosity. Default: 0.1
+g=9.81                   ! gravity strength. Default: 9.81
+rcut_x=0.025             ! cell cutoff radius in x-direction (as fraction of total size of simulation grid)
+rcut_y=0.025             ! cell cutoff radius in y-direction (as fraction of total size of simulation grid)
+rcut_z=0.025             ! cell cutoff radius in z-direction (as fraction of total size of simulation grid)
+mill=.TRUE.              ! Decide whether a watermill is in the computational domain or not
+dphi=-0.0004             ! rotation speed of watermill (only applicable if mill == .true.)
 /
 
 ```
@@ -111,6 +107,6 @@ Create a sim_parameter.dat file in your working directory and copy those lines i
 
 ## Screenshots
 
-![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/1.png)
-![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/2.png)
-![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/3.png)
+![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/1.jpg)
+![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/2.jpg)
+![ScreenShot](https://raw.github.com/jzuern/sph-fluidsim-fortran/master/data/images/3.jpg)
