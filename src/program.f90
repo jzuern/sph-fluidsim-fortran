@@ -85,7 +85,7 @@ do i = 1,nFrames
 
 
   ! Plot data immediately
-	if (MODULO(i-1,10) == 0) THEN
+	if (MODULO(i-1,10) == 0) THEN ! plot after every 10 time steps
 		 call plot_data_immediately(sstate,i,ptr_gctrl)
 	 end if
 

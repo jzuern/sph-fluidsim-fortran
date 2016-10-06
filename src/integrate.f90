@@ -35,9 +35,6 @@ module integrate
       call update_solid_particles_positions(state,params)
     end if
 
-    ! print *, "leapfrog_start: "
-    ! print *, state%v
-
     call reflect_bc(state)
 
     return

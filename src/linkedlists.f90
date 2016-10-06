@@ -119,7 +119,7 @@ contains
     use util
     type(systemstate)                        :: sstate
     type(sim_parameter)									  	 :: params
-    integer, allocatable, dimension(:,:,:)     :: lc
+    integer, allocatable, dimension(:,:,:)   :: lc
     integer, dimension(3)                    :: nmax
 
     nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
