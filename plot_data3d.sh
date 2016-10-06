@@ -16,7 +16,7 @@ do for [i=1:nfiles-4] {
   	splot 'data/frame'.i.'.dat' u 1:2:3:4 with points palette pointtype 7 ps 1.0
   	#splot 'data/frame'.i.'.dat' u 1:2:3 with points pointtype 19 ps 2.0
 	set title 'Frame '.i.''
-	pause 0.5E0
+	pause 0.1E0
 }
 
 pause 1E5

@@ -166,18 +166,18 @@ contains
     double precision, intent(in)    :: x,y,z
     logical                         :: tmp
     integer                         :: res
-    double precision                :: dx,dy,dz,r2,x_offset,y_offset,z_offset,rmin,rmax
+    double precision                :: dx,dy,dz,r2,x_center,y_center,z_center,rmin,rmax
 
-    x_offset = 0.7d0 ! x-coordinates of blob center
-    y_offset = 0.5d0 ! y-coordinates of blob center
-    z_offset = 0.6d0 ! z-coordinates of blob center
+    x_center = 0.7d0 ! x-coordinates of blob center
+    y_center = 0.3d0 ! y-coordinates of blob center
+    z_center = 0.8d0 ! z-coordinates of blob center
 
     rmin = 0.00d0 ! inner radius of circular blob
-    rmax = 0.20d0 ! outer radius of circular blob
+    rmax = 0.25d0 ! outer radius of circular blob
 
-    dx = x - x_offset
-    dy = y - y_offset
-    dz = z - z_offset
+    dx = x - x_center
+    dy = y - y_center
+    dz = z - z_center
     r2 = dx*dx + dy*dy + dz*dz
     res = 0
 
@@ -343,34 +343,39 @@ contains
     integer                                        :: i,iter,c
     type(gnuplot_ctrl), pointer                    :: ptr_gctrl
     integer(i4b)                                   :: status
-    integer(i4b)                                   :: n,n_c
-    double precision, allocatable, dimension (:,:) :: y
-    double precision, allocatable, dimension(:)    :: x_coords,z_coords
+    integer(i4b)                                   :: ntot,nliq,n_c
+    double precision, allocatable, dimension (:,:) :: y_coords_liq,y_coords_rigid
+    double precision, allocatable, dimension(:)    :: x_coords_liq,z_coords_liq, x_coords_rigid,z_coords_rigid
 
-    n = sstate%nParticles
+    ntot = sstate%nParticles
+    nliq = sstate%nLiquidParticles
 
     c = 20 ! plot only every c-th particle (it is more time-efficient than plotting every particle)
-    n_c = (n/c)
+    n_c = (ntot/c)
 
-    allocate (y(n_c,n_c))
-    allocate (x_coords(n_c))
-    allocate (z_coords(n_c))
+    allocate (y_coords_liq(n_c,n_c))
+    allocate (x_coords_liq(n_c))
+    allocate (z_coords_liq(n_c))
 
     ! preparing data structure for plotting
-    x_coords = sstate%x(1:3*n:3*c)
-    z_coords = sstate%x(3:3*n:3*c)
+    x_coords_liq = sstate%x(1:3*ntot:3*c)
+    z_coords_liq = sstate%x(3:3*ntot:3*c)
 
-    y = -1.d0 ! initialize z to value of -1.0 so that corresponding particles won't be visible in plot
+    y_coords_liq = -1.d0 ! initialize z to value of -1.0 so that corresponding particles won't be visible in plot
     do iter = 1,n_c
-      y(iter,iter) = sstate%x(3*iter*c - 1)
+      y_coords_liq(iter,iter) = sstate%x(3*iter*c - 1)
     end do
 
 
     status = gnuplot_resetsession(ptr_gctrl) ! remove previous plots from current Gnuplot session
     if(status.ne.0) stop 'Failed to reset Gnuplot session.'
 
-    status = gnuplot_plot3d(ptr_gctrl , n_c , n_c , x_coords , z_coords , y)
+    status = gnuplot_plot3d(ptr_gctrl , n_c , n_c , x_coords_liq , z_coords_liq , y_coords_liq)
     if(status.ne.0) stop 'Failed : to splot (3D) in subroutine plot_data_immediately'
+
+    status=gnuplot_setstyle(ptr_gctrl,'points pt 2')
+    status = gnuplot_plot3d(ptr_gctrl , n_c , n_c , x_coords_liq(1:100) , z_coords_liq(1:100) , y_coords_liq(1:100,1:100))
+
 
 
   end subroutine

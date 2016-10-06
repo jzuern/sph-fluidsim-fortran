@@ -96,7 +96,7 @@ contains
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
 
-    !   !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
+    !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
     do i = 1,nmax(1) ! x-coordinate
       do j = 1,nmax(2) ! y-coordinate
       do k = 1,nmax(3) ! z-coordinate
@@ -124,7 +124,7 @@ contains
             end do
 
             ! Now the neighboring cells of cell i,j
-            do no = 1,13
+            do no = 1,size(ndx)
               nx = i+ndx(no)
               ny = j+ndy(no)
               nz = k+ndz(no)
@@ -159,7 +159,7 @@ contains
       end do
       end do
     end do
-    !  !$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 
 
 
@@ -512,7 +512,7 @@ contains
     ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
 
     ! Use openMP to parallelize cell access
-    ! !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
+    !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
     do i = 1,nmax(1)
       do j = 1,nmax(2)
       do k = 1,nmax(3)
@@ -568,7 +568,7 @@ contains
             end do
 
             !check for neighboring particles in neighbor cells as well
-            do no = 1,13
+            do no = 1,size(ndx)
               nx = i + ndx(no)
               ny = j + ndy(no)
               nz = k + ndz(no)
@@ -630,7 +630,7 @@ contains
       end do
       end do
     end do
-    ! !$omp end parallel do
+    !$omp end parallel do
 
   end subroutine
 
