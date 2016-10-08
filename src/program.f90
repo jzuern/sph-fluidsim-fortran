@@ -51,7 +51,7 @@ call init_ll(sstate,ll)
 call init_lc(sstate,params,lc)
 
 ! set up neighbor lists based on placed particles
-call setup_neighbour_list(sstate, params, ll,lc)
+call update_neighbour_list(sstate, params, ll,lc)
 
 call write_data_to_file(sstate,0)
 

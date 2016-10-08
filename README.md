@@ -2,10 +2,6 @@
 
 Fortran 3D fluid simulation, based on Smoothed-Particle-Hydrodynamics (SPH) with an  implementation of a Linked Cells Algorithm.
 
-### TO Do
-
-- Reimplement OpenMP parallelization
-
 
 ## Dependencies
 
@@ -73,9 +69,9 @@ $ chmod +x plot_data3d.sh
 
 ## Visualization
 
-[Gnuplotfortran](http://gnuplotfortran.sourceforge.net/) for on-line visualization of the particle cloud for debugging and quick observation purposes.
+[Gnuplotfortran](http://gnuplotfortran.sourceforge.net/) for on-line visualization of the particle cloud for debugging and quick observation purposes. This library is rather buggy and relies on kernel ICP and fortranposix (implementation of POSIX functions in Fortran 90 & 95). It is only intened for on-line quick glances at the ongoing simulation to see if something is going wrong.
 
-If you wish to visualize to data that has been written to file during the simulation, you may use the provided bash script `plot_data3d.sh` to plot the particle data contained in those files.
+If, you wish to visualize to data that has been written to file during the simulation, once the simulation has terminated, you may use the provided bash script `plot_data3d.sh` to plot the particle data contained in those files.
 
 
 ## Simulation parameters

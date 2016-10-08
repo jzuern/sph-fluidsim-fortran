@@ -96,7 +96,7 @@ contains
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
 
-    !$omp parallel do private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
+    !$OMP PARALLEL DO private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
     do i = 1,nmax(1) ! x-coordinate
       do j = 1,nmax(2) ! y-coordinate
       do k = 1,nmax(3) ! z-coordinate
@@ -504,7 +504,7 @@ contains
     cv = -40.0d0*mu
 
     ! update neighbor list and density distribution
-    call setup_neighbour_list(sstate,params,ll,lc)
+    call update_neighbour_list(sstate,params,ll,lc)
     call compute_density_with_ll(sstate,params,ll,lc)
 
     ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)

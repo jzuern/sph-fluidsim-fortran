@@ -11,7 +11,7 @@ module linkedlists
 contains
 
 
-  subroutine setup_neighbour_list(sstate, params, ll,lc)
+  subroutine update_neighbour_list(sstate, params, ll,lc)
 
     use util
     type(systemstate)                                 :: sstate

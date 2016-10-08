@@ -350,7 +350,7 @@ contains
     ntot = sstate%nParticles
     nliq = sstate%nLiquidParticles
 
-    c = 20 ! plot only every c-th particle (it is more time-efficient than plotting every particle)
+    c = 20 ! plot only every c-th particle (it is faster than plotting every particle)
     n_c = (ntot/c)
 
     allocate (y_coords_liq(n_c,n_c))
