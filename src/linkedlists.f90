@@ -34,21 +34,24 @@ contains
     nmax(3) = int(floor(1.d0/rcut_z)) ! maximum number of cells in each dimension
 
     do i = 1 , sstate%nParticles
-      nidx(1) = int(floor((sstate%x(3*i-2))/rcut_x)); !x coordinate
+      nidx(1) = int(floor((sstate%x(3*i-2))/rcut_x)); !cell index for x coordinate
       nidx(1) = min(nidx(1),nmax(1))
       nidx(1) = max(nidx(1),1)
 
-      nidx(2) = int(floor((sstate%x(3*i-1))/rcut_y)); !y coordinate
+      nidx(2) = int(floor((sstate%x(3*i-1))/rcut_y)); !cell index for y coordinate
       nidx(2) = min(nidx(2),nmax(2))
       nidx(2) = max(nidx(2),1)
 
-      nidx(3) = int(floor((sstate%x(3*i-0))/rcut_z)); !z coordinate
+      nidx(3) = int(floor((sstate%x(3*i-0))/rcut_z)); !cell index for z coordinate
       nidx(3) = min(nidx(3),nmax(3))
       nidx(3) = max(nidx(3),1)
 
+      ! update ll
       ll(i) = lc(nidx(1),nidx(2),nidx(3))
 
+      ! update lc
       lc(nidx(1),nidx(2),nidx(3)) = i
+
     end do
 
 
@@ -106,7 +109,7 @@ contains
 
     allocate(ll(sstate%nParticles))
 
-    ll = -1 ! initialize ll to -1 (empty cell)
+    ll = -1 ! initialize ll to value of -1 (empty cell)
 
   end subroutine
 
@@ -127,7 +130,7 @@ contains
     nmax(3) = int(floor(1.d0/params%rcut_z)) ! maximum number of cells in y dimension
 
     allocate(lc(nmax(1),nmax(2),nmax(3)))
-    lc = -1 ! initialize lc to -1 (empty cell)
+    lc = -1 ! initialize lc to value of -1 (empty cell)
 
 
   end subroutine

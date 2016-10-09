@@ -2,7 +2,7 @@ module sphfunctions
 
   ! Implementation of functions and subroutines for the SPH method
 
-  !Created by Jannik Zuern on 05/16/2016
+  !Created by Jannik Zuern on 10/09/2016
   !Last modified: 07/18/2016
 
 
@@ -42,7 +42,7 @@ contains
     rho0 = params%rho0
 
 
-    ! get index range start and end corresponding to liquid particles
+    ! get index range (start and end) of liquid particles
     idxstart = sstate%nSolidParticles + 1
     idxend   = sstate%nParticles
 
@@ -87,9 +87,9 @@ contains
 
     C = mass / pi / h8;
 
-    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
-    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
+    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /) ! list of x-offsets of relevant neighbor cells
+    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /) ! list of y-offsets of relevant neighbor cells
+    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /) ! list of z-offsets of relevant neighbor cells
 
     nmax(1) = int(floor(1.d0/params%rcut_x)) ! maximum number of cells in x dimension
     nmax(2) = int(floor(1.d0/params%rcut_y)) ! maximum number of cells in y dimension
@@ -97,6 +97,7 @@ contains
 
 
     !$OMP PARALLEL DO private(n1,n2,dx,dy,dz,r2,no,nx,ny,nz,z,rho_ij)
+
     do i = 1,nmax(1) ! x-coordinate
       do j = 1,nmax(2) ! y-coordinate
       do k = 1,nmax(3) ! z-coordinate
@@ -415,30 +416,36 @@ contains
       ! iterate through all liquid particles
       do i = first,last
 
+        ! particle at x left wall
         if (sstate%x(3*i - 2) < xmin) then
           ! print *, "particle at left wall"
           call damp_reflect(3*i,0,xmin,sstate)
         end if
 
+        ! particle at x right wall
         if (sstate%x(3*i - 2) > xmax) then
           ! print *, "particle at right wall"
           call damp_reflect(3*i,0,xmax,sstate)
         end if
 
+        ! particle at bottom wall
         if (sstate%x(3*i - 1) < ymin) then
           ! print *, "particle at bottom"
           call damp_reflect(3*i,1,ymin,sstate)
         end if
 
+        ! particle at top wall
         if (sstate%x(3*i - 1) > ymax) then
           ! print *, "particle at top"
           call damp_reflect(3*i,1,ymax,sstate)
         end if
 
+        ! particle at z left wall
         if (sstate%x(3*i - 0) < zmin) then
           call damp_reflect(3*i,2,zmin,sstate)
         end if
 
+        ! particle at z right wall
         if (sstate%x(3*i - 0) > zmax) then
           call damp_reflect(3*i,2,zmax,sstate)
         end if
@@ -507,17 +514,18 @@ contains
     call update_neighbour_list(sstate,params,ll,lc)
     call compute_density_with_ll(sstate,params,ll,lc)
 
-    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /)
-    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /)
-    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /)
+    ndx = (/0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1 /) ! list of x-offsets of relevant neighbor cells
+    ndy = (/1, 1, 0,-1, 1, 1, 1, 0, 0, 0,-1,-1,-1 /) ! list of y-offsets of relevant neighbor cells
+    ndz = (/0,-1,-1,-1, 1, 0,-1, 1, 0,-1, 1, 0,-1 /) ! list of z-offsets of relevant neighbor cells
 
     ! Use openMP to parallelize cell access
     !$omp parallel do private(n1,n2,rhoi,dx,dy,dz,r2,rhoj,q,u,w0,wp,wv,dvx,dvy,dvz,no,nx,ny,nz)
+
     do i = 1,nmax(1)
       do j = 1,nmax(2)
       do k = 1,nmax(3)
 
-        ! check for particles in cell (i,j)
+        ! check for particles in cell (i,j,k)
         if (lc(i,j,k) /= -1) then
           n1 = lc(i,j,k)
 

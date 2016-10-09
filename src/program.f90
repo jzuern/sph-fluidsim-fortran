@@ -38,21 +38,22 @@ type(gnuplot_ctrl), pointer 						:: ptr_gctrl ! pointer to gnuplot control unit
 ! start counting of program runtime with intrinsic subroutine system_clock
 call system_clock ( t1, clock_rate, clock_max )
 
-! Write contents of parameter array into sim_parameter type
+! Save contents of parameter array into object of type sim_parameter
 call initialize_parameters(params)
 
-! initialize all particles
+! initialize all particles (give them a location for time t = 0)
 call init_particles(sstate,params)
 
-! initialize linked lists
+! initialize linked list ll based on initial particle configuration
 call init_ll(sstate,ll)
 
-! initialize linked cells lists
+! initialize linked cells lists lc based on initial particle configuration
 call init_lc(sstate,params,lc)
 
 ! set up neighbor lists based on placed particles
 call update_neighbour_list(sstate, params, ll,lc)
 
+! write initial particle configuration to file
 call write_data_to_file(sstate,0)
 
 ! First time-integration
@@ -73,29 +74,29 @@ nFrames 						= params%nFrames
 nSteps_per_frame 		= params%nSteps_per_frame
 
 
-! Loop through frames
+! Loop through all frames (main simulation loop)
 do i = 1,nFrames
 	print *, "Calculating frame ", i, " of " , nFrames
 
-	!Loop through steps for each frame
+	!Loop through sub-steps for each frame
 	do j = 1,nSteps_per_frame
-		call compute_accel(sstate, params,ll,lc)  !update values for accellerations
+		call compute_accel(sstate, params,ll,lc)  !update values for accelerations
 		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
 	end do
 
 
-  ! Plot data immediately
-	if (MODULO(i-1,10) == 0) THEN ! plot after every 10 time steps
+  ! on-line plotting of particles
+	if (MODULO(i-1,10) == 0) THEN ! plot after every 10 frames
 		 call plot_data_immediately(sstate,i,ptr_gctrl)
 	 end if
 
-	! Write data to file
+	! Write current particle configuration to file
 	call write_data_to_file(sstate,i)
 
 end do
 
 
-!print out elapsed time:
+!print elapsed time:
 call system_clock ( t2, clock_rate, clock_max )
 write ( *, * ) 'Elapsed time = ', real (t2-t1)/real(clock_rate), 'seconds, which is an average of ' &
 														 & ,  real (t2-t1)/real(clock_rate)/real(nFrames), ' seconds per frame.'

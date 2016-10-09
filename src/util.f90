@@ -2,7 +2,7 @@ module util
 
   !Auxiliary utility types, subroutines, and functions
 
-  !Created by Jannik Zuern on 05/16/2016
+  !Created by Jannik Zuern on 10/09/2016
 	!Last modified: 07/05/2016
 
 
@@ -61,7 +61,7 @@ contains
 
   subroutine update_solid_particles_positions(sstate,params)
 
-    ! updates solid particles position solely based on passed time
+    ! updates solid particles position solely based on passed time and angular velocity of water mill
 
     type(systemstate)                           :: sstate !system state object
     type(sim_parameter)											    :: params
@@ -82,8 +82,8 @@ contains
 
 
       ! convert positions back to cartesian coordinates
-      sstate%x(3*particle-2) = center(1) + radius * SIN(phi_new)
-      sstate%x(3*particle-0) = center(2) + radius * COS(phi_new)
+      sstate%x(3*particle-2) = center(1) + radius * SIN(phi_new) ! x-coordinate
+      sstate%x(3*particle-0) = center(2) + radius * COS(phi_new) ! z-coordinate
 
     end do
 
@@ -141,6 +141,7 @@ contains
     integer                         :: res
     double precision                :: xmin,xmax,ymin,ymax,zmin,zmax
 
+    ! x-y-z dimensions of box
     xmin = 0.5d0
     xmax = 1.0d0
     ymin = 0.8d0
@@ -256,7 +257,7 @@ contains
 
     namelist /SIMPARAMETER/nframes,nSteps_per_frame,h,dt,rho0,k,mu,g,rcut_x,rcut_y,rcut_z,mill,dphi
 
-    CALL get_command_argument(1, inputfile)
+    CALL get_command_argument(1, inputfile) ! retrieve the 2nd argument that was passed to program on command line
     print *, "Parsing file ", inputfile
 
 
@@ -264,6 +265,7 @@ contains
     read(10,NML=SIMPARAMETER)
     close(10)
 
+    !save all read parameters into object of type sim_parameter
     params%nframes              = nframes
     params%nSteps_per_frame     = nSteps_per_frame
     params%h                    = h
@@ -278,7 +280,7 @@ contains
     params%mill                 = mill
     params%dphi                 = dphi
 
-    print *, "...Parsing completed "
+    print *, "...parsing completed "
 
   end subroutine
 
@@ -293,24 +295,28 @@ contains
     integer                                     :: n,i,k
     double precision, allocatable, dimension(:) :: x,y,z,rho
     character(len=100) :: filename
-    character(len=5)   :: dummy
+    character(len=5)   :: dummy !
     character(len=8)   :: fmt ! format descriptor
 
-    ! fmt = '(I5.5)'   ! an integer of width 5 with zeros at the left
-    fmt = '(I0)'   ! an integer of width 5 with zeros at the left
+    ! define format of output
+    fmt = '(I0)'
 
+    ! converting integer to string using a 'internal file'
+    write (dummy,fmt) i
 
-    write (dummy,fmt) i ! converting integer to string using a 'internal file'
-    ! write(dummy,*) i
-    filename='data/frame'//trim(dummy)//'.dat'
+    !concatenate 'strings' to final string filename
+    filename = 'data/frame'//trim(dummy)//'.dat'
 
 
     open(unit = 10, file = filename)
 
+
     n = sstate%nParticles
+
     x = sstate%x(1:3*n:3)
     y = sstate%x(2:3*n:3)
     z = sstate%x(3:3*n:3)
+
     rho = sstate%rho(1:n:1)
 
 
@@ -321,6 +327,7 @@ contains
 
 
     close(10)
+    
 
   end subroutine
 
