@@ -47,15 +47,15 @@ Additionally, I implemented a linked lists based approach in order to account fo
 The simulation setup introduces a particle cloud (liquid blob) that is falling downwards due to gravitational forces. I also implemented a rotating structure (call it a watermill) in the center of the simulation domain. This structure causes the blob to disperse and break up.
 
 
-The code within the source files is structured in a way as to reflect its role in the simulation.
+The code within the source files is structured according to its role in the simulation.
 Below, we have the list of source files:
 
-- gnufor2.f90: interface to call for a Gnuplot instance from within the FORTRAN program
-- integrate.f90: implementation of the leapfrog integration method
-- linkedlist.f90: implementation of linked list bookkeeping routines
-- sphfunctions:f90: implementation of particle interaction routines
-- util.f90: auxiliary functions
-- program.f90: main program which starts simulation and contains the simulation loop
+- `gnufor2.f90`: interface to call for a Gnuplot instance from within the FORTRAN program
+- `integrate.f90`: implementation of the leapfrog integration method
+- `linkedlist.f90`: implementation of linked list bookkeeping routines
+- `sphfunctions:f90`: implementation of particle interaction routines
+- `util.f90`: auxiliary functions
+- `program.f90`: main program which starts simulation and contains the simulation loop
 
 Additionally commentary is provided along the code within the source files.
 
