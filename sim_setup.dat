@@ -1,0 +1,15 @@
+&SIMPARAMETER
+nframes=300               ! Number of frames
+nSteps_per_frame=50        ! Number of steps per frame. Default: 50
+h=0.015                     ! Size of particles (radius). Also: Distance of particles in initial configuration
+dt=1.0E-4                 ! Time step size. Default: 1E-4
+rho0=1.0E4                ! Reference density Default: 10000
+k=1.0E6                  ! Bulk modulus. Default: 1000
+mu=0.001                    ! Viscosity. Default: 0.1
+g=9.81                     ! gravity strength. Default: 9.81
+rcut_x=0.025                 ! cell cutoff radius in x-direction (as fraction of total size of simulation grid)
+rcut_y=0.025                ! cell cutoff radius in y-direction (as fraction of total size of simulation grid)
+rcut_z=0.025                ! cell cutoff radius in z-direction (as fraction of total size of simulation grid)
+mill=.TRUE.                ! Decide whether a watermill is in the computational domain or not
+dphi=-0.0004               ! rotation speed of watermill (only applicable if mill == .true.)
+/
