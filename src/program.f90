@@ -3,7 +3,7 @@ program sph
 	! Main program of project
 
 	!Created by Jannik Zuern on 05/16/2016
-	!Last modified: 07/05/2016
+	!Last modified: 10/12/2016
 
 
 	use integrate     !Module: definition of integration functions (leapfrog)
@@ -23,16 +23,16 @@ program sph
 
 
 
-integer																	:: nFrames 							! number of frames to calculate
-integer																	:: nSteps_per_frame     ! number of steps between shown frame
-integer 																:: i,j  								! loop iteration variables
-integer, allocatable, dimension(:)  	  :: ll 									! linked list array
-integer, allocatable, dimension(:,:,:)  :: lc 									! linked cell array
-type(systemstate)                 	    :: sstate								! Simulation state
-type(sim_parameter)											:: params               ! parameter of simulation
-integer 																:: t1,t2, clock_rate, clock_max ! for time counting
+integer					:: nFrames 		! number of frames to calculate
+integer					:: nSteps_per_frame     ! number of steps between shown frame
+integer 				:: i,j  		! loop iteration variables
+integer, allocatable, dimension(:)  	:: ll 			! linked list array
+integer, allocatable, dimension(:,:,:)  :: lc 			! linked cell array
+type(systemstate)                 	:: sstate		! Simulation state
+type(sim_parameter)			:: params               ! parameter of simulation
+integer 				:: t1,t2, clock_rate, clock_max ! for time counting
 
-type(gnuplot_ctrl), pointer 						:: ptr_gctrl ! pointer to gnuplot control unit
+type(gnuplot_ctrl), pointer 		:: ptr_gctrl ! pointer to gnuplot control unit
 
 
 ! start counting of program runtime with intrinsic subroutine system_clock
@@ -62,7 +62,7 @@ call compute_accel(sstate, params, ll,lc)
 
 
 call leapfrog_start(sstate,params)    ! for first iteration, we must use different leapfrog algorithm
-																	    ! as we de not have any previous time step yet
+					  ! as we de not have any previous time step yet
 
 call write_data_to_file(sstate,0)
 
@@ -81,7 +81,7 @@ do i = 1,nFrames
 	!Loop through sub-steps for each frame
 	do j = 1,nSteps_per_frame
 		call compute_accel(sstate, params,ll,lc)  !update values for accelerations
-		call leapfrog_step(sstate, params) 	    	!update velocities and positions based on previously calculated accelleration
+		call leapfrog_step(sstate, params) 	   !update velocities and positions based on previously calculated accelleration
 	end do
 
 

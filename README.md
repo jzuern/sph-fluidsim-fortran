@@ -47,7 +47,7 @@ Additionally, I implemented a linked lists based approach in order to account fo
 The simulation setup introduces a particle cloud (liquid blob) that is falling downwards due to gravitational forces. I also implemented a rotating structure (call it a watermill) in the center of the simulation domain. This structure causes the blob to disperse and break up.
 
 
-The code within the source files is structured according to its role in the simulation.
+The code within the source files is structured in a way that represents its in the simulation.
 Below, we have the list of source files:
 
 - `gnufor2.f90`: interface to call for a Gnuplot instance from within the FORTRAN program
@@ -84,7 +84,7 @@ Exemplary parameters for fluid behavior similar to water are:
 &SIMPARAMETER
 nframes=200              ! Number of frames
 nSteps_per_frame=50      ! Number of steps per frame. Default: 50
-h=0.015                  ! Size of particles (radius). Also: Distance of particles in initial configuration
+h=0.02                  ! Size of particles (radius). Also: Distance of particles in initial configuration
 dt=1.0E-4                ! Time step size. Default: 1E-4
 rho0=1.0E4               ! Reference density Default: 10000
 k=1.0E6                  ! Bulk modulus. Default: 1000

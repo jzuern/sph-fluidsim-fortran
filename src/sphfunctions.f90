@@ -3,7 +3,7 @@ module sphfunctions
   ! Implementation of functions and subroutines for the SPH method
 
   !Created by Jannik Zuern on 10/09/2016
-  !Last modified: 07/18/2016
+  !Last modified: 10/12/2016
 
 
 implicit none
@@ -16,7 +16,7 @@ contains
 
     use util
     type(systemstate)                           :: sstate !system state object
-    type(sim_parameter)											    :: params
+    type(sim_parameter)				:: params
 
     call place_particles(sstate,params)
     call normalize_mass(sstate,params)
@@ -34,7 +34,7 @@ contains
     use util
 
     type (systemstate)                          :: sstate
-    type(sim_parameter)											    :: params
+    type(sim_parameter)				 :: params
     double precision                            :: rho0
     double precision                            :: rho2s,rhos
     integer                                     :: idxstart, idxend
@@ -68,7 +68,7 @@ contains
 
     use util
     type (systemstate)                          :: sstate
-    type(sim_parameter)											    :: params
+    type(sim_parameter)				:: params
     integer, allocatable, dimension(:)          :: ll
     integer, allocatable, dimension(:,:,:)      :: lc
     integer, dimension(13)                      :: ndx,ndy,ndz
